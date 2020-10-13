@@ -157,10 +157,6 @@ class NS2Dsolver(object):
 
 
 
-    
-
-
-
     def _cal_RHS_poisson_eq_(self, dt):
         """
         calculate RHS of the pressure poisson equation 
