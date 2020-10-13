@@ -125,7 +125,7 @@ class NS2Dsolver(object):
             fun_ = args[_ic_]
 
             # if _ic_ = 'u', then _set_ic_ =self.u, likewise.
-            # so, do not rquire any return function, cool!
+            # gets updated every time calling, cool!
             _set_ic_ = self.__dict__[_ic_]
 
             #
