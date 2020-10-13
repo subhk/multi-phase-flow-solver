@@ -25,17 +25,16 @@ class NS2Dsolver(object):
 
     def __init__(self, grid, **args):
 
-
         # Initialise data structure:
         self.grid = grid
         self.time = 0.
-        self.p = np.zeros( np.array(grid.shape)+1, np.float  )
-        self.u = np.zeros( (self.p.shape[0]-1, np.p.shape[1]), np.float )
-        self.w = np.zeros( (self.p.shape[0], np.p.shape[1]-1), np.float )
+        self.p = np.zeros( np.array(grid.shape)+1, dtype=np.float64  )
+        self.u = np.zeros( (self.p.shape[0]-1, np.p.shape[1]), dtype=np.float64 )
+        self.w = np.zeros( (self.p.shape[0], np.p.shape[1]-1), dtype=np.float64 )
         self.mask = np.ones(self.p.shape, int)
-        self.χ = np.zeros(self.p.shape, float)  # vof value
-        self.tracer = np.zeros(self.p.shape, float)
-        self._bc = {self.EAST:{}, self.WEST:{}, self.NORTH:{}, self.SOUTH:{}}
+        self.χ = np.zeros(self.p.shape, dype=np.float64 )  # vof value
+        self.tracer = np.zeros(self.p.shape, dtype=np.float64 )
+        self._bc = {self.LEFT:{}, self.RIGHT:{}, self.UP:{}, self.DOWN:{}}
         self._bc_finalised = False
         self.iter = 0
         self._sim_time = []
@@ -43,7 +42,7 @@ class NS2Dsolver(object):
         #default paramters:
         default_params = {'ρ₁': 1000, 'ρ₂': 10, 
                         'μ₁': 1.0, 'μ₂': 1.0,
-                        'σ': 0.0, 'g†': [0.0, 0.0],
+                        'σ': 0.0, 'gra': [0.0, 0.0],
                         'multi_phase': False, 'use_passive_tracer': False,
                         'curve_method': self.CURV_MDAC,
                         'mass_conservation': self.MASS_ADD, 
@@ -75,39 +74,7 @@ class NS2Dsolver(object):
                 self.__dict__[key] = args[key]
 
 
-    def _set_bc_(self, bounadries, **args):
-        """
-        Set bonadry conditions for the computational domain.
-        The 'bounadries' should be 'east', 'west', 'north', 'south', 
-        or a combination with '+' sign, for exmaple: 'east'+'west'+'south'
-        with a common boundary conditions. 
-        The keywords should be 'u', 'w', 'p', 'χ', 
-        The condition should be either constant, or can be function of
-        (x,y,t).
-        """
 
-        for bounadry in bounadries.split('+'):
-
-            if bounadry.self._bc:
-                self._bc[bounadry].update(args)
-
-            if 'p' in args:
-                if bounadry == self.UP:
-                    self.mask[:,-1] = 3
-                elif bounadry == self.DOWN:
-                    self.mask[:,0]= 3
-                elif bounadry == self.LEFT:
-                    self.mask[0,:] = 3
-                elif bounadry == self.RIGHT:
-                    self.mask[-1,:] = 3
-
-            if 'w' in args:
-                if bounadry in (self.UP, self.DOWN):
-                    self._bc[bounadry]['dpdn'] = 0
-
-            if 'u' in args:
-                if bounadry in (self.LEFT, self.RIGHT):
-                    self._bc[bounadry]['dpdn'] = 0
 
     
     def _set_ic_(self, **args):
@@ -125,7 +92,7 @@ class NS2Dsolver(object):
             fun_ = args[_ic_]
 
             # if _ic_ = 'u', then _set_ic_ =self.u, likewise.
-            # so, do not rquire any return function, cool!
+            # gets updated every time calling, cool!
             _set_ic_ = self.__dict__[_ic_]
 
             #
@@ -154,10 +121,6 @@ class NS2Dsolver(object):
 
         remove_singularity(self.mask)
         
-
-
-
-    
 
 
 
@@ -215,6 +178,7 @@ class NS2Dsolver(object):
 
                 if 'dudn' in self._bc[self.LEFT]:   u[0,1:-1]  *= flow_correction
                 if 'dudn' in self._bc[self.RIGHT]:  u[-1,1:-1] *= flow_correction
+
 
         # calculate RHS of the PPE here:
         ℝ = np.zeros( p.shape, np.float )
@@ -325,249 +289,6 @@ class NS2Dsolver(object):
     #     u, w = self.u, self.w
 
 
-    def _cal_νΔu_(self, μ, ρ, dt):
-        """
-        calculate viscous force 
-        """
-
-        δu = np.zeros( self.u.shape, np.float )
-        δw = np.zeros( self.w.shape, np.float )
-
-        μ_avg = 0.25 * ( μ[1:,1:] + μ[1:,:-1] + μ[:-1,1:] + μ[:-1,:-1] )
-
-        δ = self.grid.δ
-        u, w = self.u, self.w
-
-        # viscous terms in u-equation: (1/ρ)∂/∂x(2μ∂u/∂x) + (1/ρ)∂/∂y(μ(∂u/∂z+∂w/∂x))
-        # (1/ρ)∂/∂x(2μ∂u/∂x):
-        #  
-        δu[1:-1,1:-1] += ( μ[2:-1,1:-1] * (u[2:,1:-1] - u[1:-1,1:-1] ) - \
-                    μ[1:-2,1:-1] * ( u[1:-1,1:-1] - u[:-2,1:-1]) ) / \
-                    ( 0.5 * (δ[0]**2) * ρ[1:-1,1:-1] )
-
-        # ∂/∂y(μ(∂u/∂z+∂w/∂x)):
-        δu[1:-1,1:-1] += ( μ_avg[:,1:] * ( (u[:,2:] - u[:,1:-1]) / (δ[1]**2) + \
-                    (w[1:,1:] - w[:-1,1:]) / (δ[0] * δ[1]) ) - \
-                    μ_avg[:,:-1] * ( (u[:,1:-1] - u[:,:-2]) / (δ[1]**2) + \
-                    (w[1:,:-1] - w[:-1,:-1]) / (δ[0]*δ[1]) ) ) / \
-                    ρ[:,1:-1]
-
-        
-        # viscous terms in w-equation: (1/ρ)∂/∂y(2μ∂w/∂z) + (1/ρ)∂/∂x(μ(∂u/∂z+∂w/∂x))
-        # (1/ρ)∂/∂y(2μ∂w/∂z):
-        #
-        δw[1:-1,1:-1] += (μ[1:-1,2:-1] * (w[1:-1,2:] - w[1:-1,1:-1]) - \
-                        μ[1:-1,1:-2] * (w[1:-1,1:-1] - w[1:-1,:-2])) / \
-                        (0.5 * (δ[1]**2) * ρ[1:-1,1:-1])
-
-        # (1/ρ)∂/∂x(μ(∂u/∂z+∂w/∂x))
-        δw[1:-1,1:-1] += (μ_avg[1:,:] * ( (w[2:,:] - w[1:-1,:])/(δ[0]**2) + \
-                      (u[1:,1:] - u[1:,:-1]) / (δ[0]*δ[1]) ) - \
-                      μ_avg[:-1,:] * ( (w[1:-1,:] - w[:-2,:]) / (δ[0]**2) + \
-                      (u[:-1,1:] - u[:-1,:-1])/(δ[0]*δ[1]) ) ) / \
-                      ρ[1:-1,:]
-
-        return δu * dt, δw * dt
-
-
-    def _update_vel_bc_(self):
-
-        u, w = self.u, self.w
-
-        # top-boundary condition
-        _bc_ = self._bc[self.UP]
-        if 'dwdn' in _bc_:
-            if _bc_['dwdn'] != 0:
-                raise ValueError, '∂w/∂n must be zero.'
-            w[:,-1] = w[:,-2] # extrapolate
-    
-        # TODO : require to handle 'w'-condition
-        
-        if 'dudn' in _bc_:
-            if _bc_['dudn'] != 0:
-                raise ValueError, '∂u/∂n must be zero.'
-            u[:,-1] = u[:,-2] # extrapolate
-        elif 'u' in _bc_:
-            fun_ = _bc_['u']
-            if callable(fun_):
-                for i in range(u.shape[0]):
-                    node = self.grid[i, u.shape[1]-2]
-                    u[i,-1] = 2. * fun_(node[0], node[1], self.time) - u[i,-2]
-            else:
-                u[:,-1] = 2. * fun_ - u[:,-2]
-
-        # bottom-boundary condition
-        _bc_ = self._bc[self.DOWN]
-        if 'dwdn' in _bc_:
-            if _bc_['dwdn'] != 0:
-                raise ValueError, '∂w/∂n must be zero.'
-            w[:,0] = w[:,1]
-        
-        if 'dudn' in _bc_:
-            if _bc_['dudn'] != 0:
-                raise ValueError, '∂u/∂n must be zero.'
-            u[:,0] = u[:,1]
-        elif 'u' in _bc_:
-            fun_ = _bc_['u']
-            if callable(fun_):
-                for i in range(u.shape[0]):
-                    node = self.grid[i, 0]
-                    u[i,0] = 2. * fun_(node[0], node[1], self.time) - u[i,1]
-            else:
-                u[:,0] = 2. * fun_ - u[:,1]
-
-        # left-boundary condition
-        _bc_ = self._bc[self.LEFT]
-        if 'dudn' in _bc_:
-            if _bc_['dudn'] != 0:
-                raise ValueError, '∂u/∂n must be zero.'
-            u[-1,:] = u[-2,:]
-        
-        if 'dwdn' in _bc_:
-            if _bc_['dvdn'] != 0:
-                raise ValueError, '∂w/∂n must be zero.'
-            w[-1,:] = w[-2,:]
-        elif 'w' in _bc_:
-            fun_ = _bc_['w']
-            if callable(fun_):
-                for i in range(w.shape[1]):
-                    node = self.grid[w.shape[0]-2, i]
-                    w[-1,i] = 2. * fun_(node[0], node[1], self.time) - w[-2,i]
-            else:
-                w[-1,:] = 2. * fun_ - w[-2,:]
-
-        # right-boundary condition
-        _bc_ = self._bc[self.RIGHT]
-        if 'dudn' in _bc_:
-            if _bc_['dudn'] != 0:
-                raise ValueError, '∂u/∂n must be zero.'
-            u[0,:] = u[1,:]
-        
-        if 'dwdn' in _bc_:
-            if _bc_['dwdn'] != 0:
-                raise ValueError, '∂w/∂n must be zero.'
-            w[0,:] = w[1,:]
-        elif 'w' in _bc_:
-            fun_ = _bc_['w']
-            if callable(fun_):
-                for i in range(v.shape[1]):
-                    node = self.grid[0, i]
-                    w[0,i] = 2. * fun_(node[0], node[1], self.time) - w[1,i]
-            else:
-                w[0,:] = 2. * fun_ - w[1,:]
-
-
-    def _update_pressure_bc_(self):
-        p = self.p
-
-        # top-boundary condition
-        _bc_ = self._bc[self.UP]
-        if 'dpdn' in _bc_:
-            if _bc_['dpdn'] != 0:
-                raise ValueError, '∂p/∂n must be zero.'
-            p[:,-1] = p[:,-2]
-        elif 'p' in _bc_:
-            fun_ = _bc_['p']
-            if callable(fun_):
-                for i in range(p.shape[0]):
-                    node = self._grid[i-0.5, p.shape[1]-2]
-                    p[i,-1] = 2. * fun_(node[0], node[1], self.time) - p[i,-2]
-            else:
-                p[:,-1] = 2. * fun_ - p[:,-2]
-
-        # bottom-boundary condition
-        _bc_ = self._bc[self.DOWN]
-        if 'dpdn' in _bc_:
-            if _bc_['dpdn'] != 0:
-                raise ValueError, '∂p/∂n must be zero.'
-            p[:,0] = p[:,1]
-        elif 'p' in _bc_:
-            fun_ = _bc_['p']
-            if callable(fun_):
-                for i in range(p.shape[0]):
-                    node = self.grid[i-0.5, 0]
-                    p[i,0] = 2. * fun_(node[0], node[1], self.time) - p[i,1]
-            else:
-                p[:,0] = 2. * fun_ - p[:,1]
-
-        # left-boundary condition
-        _bc_ = self._bc[self.LEFT]
-        if 'dpdn' in _bc_:
-            if _bc_['dpdn'] != 0:
-                raise ValueError, '∂p/∂n must be zero.'
-            p[-1,:] = p[-2,:]
-        elif 'p' in _bc_:
-            fun_ = _bc_['p']
-            if callable(fun_):
-                for i in range(p.shape[1]):
-                    node = self.grid[p.shape[0]-2, i-0.5]
-                    p[-1,i] = 2. * fun_(node[0], node[1], self.time) - p[-2,i]
-            else:
-                p[-1,:] = 2. * fun_ - p[-2,:]
-
-        # right-boundary condition
-        _bc_ = self._bc[self.RIGHT]
-        if 'dpdn' in _bc_:
-            if _bc_['dpdn'] != 0:
-                raise ValueError, '∂p/∂n must be zero.'
-            p[0,:] = p[1,:]
-        elif 'p' in _bc_:
-            fun_ = _bc_['p']
-            if callable(fun_):
-                for i in range(p.shape[1]):
-                    node = self.grid[0, i-0.5]
-                    p[0,i] = 2 * fun_(node[0], node[1], self.time) - p[1,i]
-            else:
-                p[0,:] = 2. * fun_ - p[1,:]
-
-
-    def _update_Ξ_bc_(self, Ξ, β ):
-
-        p = self.p
-        
-        # top-boundary condition
-        _bc_ = self._bc[self.UP]
-        if 'p' in _bc_:
-            fun_ = _bc_['p']
-            if callable(fun_):
-                for i in range(p.shape[0]):
-                    node = self.grid[i-0.5, p.shape[1]-2]
-                    Ξ[i,-1] = 2. * fun_(node[0], node[1], self.time) - β * (p[i,-2] + p[i,-1])
-            else:
-                Ξ[:,-1] = 2 * fun_ - β * (p[:,-2] + p[:,-1])
-        
-        # bottom-boundary condition
-        _bc_ = self._bc[self.DOWN]
-        if 'p' in _bc_:
-            fun_ = _bc_['p']
-            if callable(fun_):
-                for i in range(p.shape[0]):
-                    node = self.grid[i-0.5, 0]
-                    Ξ[i,0] = 2. * fun_(node[0], node[1], self.time) - β * (p[i,1] + p[i,0])
-            else:
-                Ξ[:,0] = 2. * fun_ - β * (p[:,1] + p[:,0])        
-
-        # left-boundary condition
-        _bc_ = self._bc[self.LEFT]
-        if 'p' in _bc_:
-            fun_ = _bc_['p']
-            if callable(fun_):
-                for i in range(p.shape[1]):
-                    node = self.grid[p.shape[0]-2, i-0.5]
-                    Ξ[-1,i] = 2. * f(node[0], node[1], self.time) - β * (p[-2,i] + p[-1,i])
-            else:
-                Ξ[-1,:] = 2 * fun_ - β * (p[-2,:] + p[-1,:])        
-
-        # right-boundary condition
-        _bc_ = self._bc[self.RIGHT]
-        if 'p' in _bc_:
-            fun_ = _bc_['p']
-            if callable(fun_):
-                for i in range(p.shape[1]):
-                    node = self.grid[0, i-0.5]
-                    Ξ[0,i] = 2. * fun_(node[0], node[1], self.time) - β * (p[1,i] + p[0,i])
-            else:
-                Ξ[0,:] = 2 * fun_ - β * (p[1,:] + p[0,:])        
 
 
 
