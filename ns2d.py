@@ -25,7 +25,6 @@ class NS2Dsolver(object):
 
     def __init__(self, grid, **args):
 
-
         # Initialise data structure:
         self.grid = grid
         self.time = 0.
@@ -366,7 +365,7 @@ class NS2Dsolver(object):
                       ρ[1:-1,:]
 
         # // TODO need to evaulate the viscous terms it at the boundaries.
-        
+
         return δu * dt, δw * dt
 
 
