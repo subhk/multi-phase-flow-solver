@@ -212,6 +212,7 @@ class NS2Dsolver(object):
                 if 'dudn' in self._bc[self.LEFT]:   u[0,1:-1]  *= flow_correction
                 if 'dudn' in self._bc[self.RIGHT]:  u[-1,1:-1] *= flow_correction
 
+
         # calculate RHS of the PPE here:
         ℝ = np.zeros( p.shape, np.float )
         ℝ[1:-1,1:-1] = ( u[1:,1:-1] - u[:-1,1:-1] ) / δ[0] + \
@@ -348,6 +349,7 @@ class NS2Dsolver(object):
                     (w[1:,:-1] - w[:-1,:-1]) / (δ[0]*δ[1]) ) ) / \
                     ρ[:,1:-1]
 
+        # // TODO need to evaulate the viscous terms it at the boundaries.
         
         # viscous terms in w-equation: (1/ρ)∂/∂y(2μ∂w/∂z) + (1/ρ)∂/∂x(μ(∂u/∂z+∂w/∂x))
         # (1/ρ)∂/∂y(2μ∂w/∂z):
@@ -363,6 +365,8 @@ class NS2Dsolver(object):
                       (u[:-1,1:] - u[:-1,:-1])/(δ[0]*δ[1]) ) ) / \
                       ρ[1:-1,:]
 
+        # // TODO need to evaulate the viscous terms it at the boundaries.
+        
         return δu * dt, δw * dt
 
 
