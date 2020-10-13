@@ -72,10 +72,7 @@ class NS2Dsolver(object):
         for key in default_params:
             if key in args:
                 self.__dict__[key] = args[key]
-
-
-
-
+                
     
     def _set_ic_(self, **args):
         """
