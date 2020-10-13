@@ -29,13 +29,13 @@ class NS2Dsolver(object):
         # Initialise data structure:
         self.grid = grid
         self.time = 0.
-        self.p = np.zeros( np.array(grid.shape)+1, np.float  )
-        self.u = np.zeros( (self.p.shape[0]-1, np.p.shape[1]), np.float )
-        self.w = np.zeros( (self.p.shape[0], np.p.shape[1]-1), np.float )
+        self.p = np.zeros( np.array(grid.shape)+1, dtype=np.float64  )
+        self.u = np.zeros( (self.p.shape[0]-1, np.p.shape[1]), dtype=np.float64 )
+        self.w = np.zeros( (self.p.shape[0], np.p.shape[1]-1), dtype=np.float64 )
         self.mask = np.ones(self.p.shape, int)
-        self.χ = np.zeros(self.p.shape, float)  # vof value
-        self.tracer = np.zeros(self.p.shape, float)
-        self._bc = {self.EAST:{}, self.WEST:{}, self.NORTH:{}, self.SOUTH:{}}
+        self.χ = np.zeros(self.p.shape, dype=np.float64 )  # vof value
+        self.tracer = np.zeros(self.p.shape, dtype=np.float64 )
+        self._bc = {self.LEFT:{}, self.RIGHT:{}, self.UP:{}, self.DOWN:{}}
         self._bc_finalised = False
         self.iter = 0
         self._sim_time = []
