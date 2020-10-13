@@ -13,9 +13,10 @@ class _bc_ns2d_(object):
     UP      = 'up'
     DOWN    = 'down'
 
+    def __init__(self, u, w, p, grid, **args):
 
-
-
+        self._bc = {self.LEFT:{}, self.RIGHT:{}, self.UP:{}, self.DOWN:{}}
+        
 
     def _set_bc_(self, bounadries, **args):
         """
