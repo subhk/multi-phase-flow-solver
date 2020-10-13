@@ -43,7 +43,7 @@ class NS2Dsolver(object):
         #default paramters:
         default_params = {'ρ₁': 1000, 'ρ₂': 10, 
                         'μ₁': 1.0, 'μ₂': 1.0,
-                        'σ': 0.0, 'g†': [0.0, 0.0],
+                        'σ': 0.0, 'gra': [0.0, 0.0],
                         'multi_phase': False, 'use_passive_tracer': False,
                         'curve_method': self.CURV_MDAC,
                         'mass_conservation': self.MASS_ADD, 
