@@ -43,20 +43,16 @@ class NS2Dsolver(object):
         self._sim_time = []
 
         #default paramters:
-        default_params = {'ρ₁': 1000, 'ρ₂': 10, 
+        default_params = {'ρ₁': 1000, 'ρ₂': 1000, 
                         'μ₁': 1.0, 'μ₂': 1.0,
                         'σ': 0.0, 'gra': [0.0, 0.0],
-                        'multi_phase': False, 'use_passive_tracer': False,
-                        'curve_method': self.CURV_MDAC,
-                        'mass_conservation': self.MASS_ADD, 
-                        'property_smoothing': False    }
+                        'multi_phase': False, 'use_passive_tracer': False }
 
         for key in default_params:
             self.__dict__[key] = default_params[key]
 
         
         # optional parameters
-
         if 'μ' in args: args['μ₁'] = args['μ']
         if 'ν' in args: args['ν₁'] = args['ν']
         if 'ρ' in args: args['ρ₁'] = args['ρ']
@@ -243,28 +239,26 @@ class NS2Dsolver(object):
 
 
     def _cfl_dt_(self, safety=0.8):
-
         """
         Calculate a time stepping value that should give
-        a stable simulation. It will get called every iteration.
-        PS: may call it once 10 or some time-instant, could result
+        a stable (and correct!) simulation. It will get called every iteration.
+        PS: good idea to call it once 10 or likewise iterations → could be
         in more-effective: // TODO requires testing
         """
 
         δ = self.grid.δ
-        u = abs(self.u) + 1.e-7 * (self.u == 0.0) # avoid division by zero
-        w = abs(self.v) + 1.e-7 * (self.w == 0.0)
+        u_ = abs(self.u) + 1.e-7 * (self.u == 0.0) # avoid division by zero
+        w_ = abs(self.v) + 1.e-7 * (self.w == 0.0)
 
         # may be multi-phase requires different criretia
         # // TODO: need to dig some literatures.
 
         ν = self.μ / self.ρ
 
-        dt1 = min( δ[0] / u.max(), δ[1] / w.max() )
-        dt2 = 0.5 / (ν * (delta**-2).sum())
-        dt3 = 2.0 * nu / max(u.max(), v.max())**2
+        dt_cfl = min( δ[0] / u_.max(), δ[1] / w_.max() )
+        dt_vis = 0.5 / (  ν * (δ**-2).sum() )
 
-        return min(dt1, dt2, dt3) * safety_factor
+        return min( dt_cfl, dt_vis ) * safety
 
 
     #
