@@ -127,7 +127,8 @@ class _bc_ns2d_(object):
                 raise ValueError, '∂w/∂n must be zero.'
             w[:,-1] = w[:,-2] # extrapolate
     
-        # TODO : require to handle 'w'-condition
+        # done: TODO : require to handle 'w'-condition: it is done in 
+        # "_update_intermediate_vel_bc_()"
         
         if 'dudn' in _bc_:
             if _bc_['dudn'] != 0:

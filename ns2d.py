@@ -306,10 +306,12 @@ class NS2Dsolver(object):
         # if passive tracer used:
         if self.use_passive_tracer:
             # add the tracer advection code.
+            print( 'no passive tracer' )
         
         # if multi-phase used:
         if self.multi_phase:
             # add multiphase code here
+            print( 'no multi-phase simulation' )
 
         
         
