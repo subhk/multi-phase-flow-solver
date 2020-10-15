@@ -7,6 +7,7 @@ import numpy as np
 
 from domain import Domain
 from bc import _bc_ns2d_
+from force import fc
 
 
 class NS2Dsolver(object):
@@ -121,8 +122,6 @@ class NS2Dsolver(object):
     #     remove_singularity(self.mask)
         
 
-
-
     def _cal_RHS_poisson_eq_(self, dt):
         """
         calculate RHS of the pressure poisson equation 
@@ -194,7 +193,7 @@ class NS2Dsolver(object):
         return -1./dt * ℝ
 
     
-    def _cal_nonlinear_terms_(self, dt, γ=0.0 ):
+    def _cal_nonlinear_terms_(self, γ=0.0 ):
         """
         calculate the nonlinear terms for the u and w-equations.
         """
@@ -240,56 +239,7 @@ class NS2Dsolver(object):
         # // TODO: need to implement the upwind scheme for stabilisation.
         
 
-        return δu * dt, δw * dt
-    
-
-    def _cal_ΔP_( self, ρ, β=1.0, dt ):
-        """
-        calculate the x and y-pressure gradients.
-        """
-        δu = np.zeros( self.u.shape, np.float )
-        δw = np.zeros( self.v.shape, np.float )
-
-        p = self.p
-        δ = self._grid.δ
-        # ∂/∂x(p):
-        δu[:,1:-1] -= β/δ[0] * ( p[1:,1:-1] - p[:-1,1:-1]  ) / ρ[:,1:-1]
-
-        # ∂/∂z(p):
-        δw[1:-1,:] -= β/δ[1] * ( p[1:-1,1:] - p[1:-1,:-1] ) / ρ[1:-1,:]
-
-        return δu * dt, δw * dt
-
-    
-    # def _cal_σ_force( self, ρ, dt ):
-    #     """
-    #     calculate force due to the surface tension, σ
-    #     """
-    #     δu = np.zeros( self.u.shape, np.float )
-    #     δw = np.zeros( self.w.shape, np.float )
-
-    #     if self._multi_phase and self.σ_coeff != 0.:
-    #         ℙx, ℙz = self._cal_σ_()
-
-    #         ℙx /= ρ[1:-1,1:-1] 
-    #         ℙz /= ρ[1:-1,1:-1]
-         
-    #         δu[1:-1,1:-1] += ℙx
-    #         δw[1:-1,1:-1] += ℙz
-
-    #     return δu * dt, δw * dt
-    
-
-    # def _cal_σ_( self, dt ):
-        
-    #     χ = self.χ
-    #     mask = self.mask
-    #     δ = self._grid.δ
-    #     u, w = self.u, self.w
-
-
-
-
+        return δu, δw 
 
     #
     # now, simuation starts, finally!
@@ -312,11 +262,10 @@ class NS2Dsolver(object):
         δ, mask, χ = self.grid.δ, self.mask, self.χ
         u, w, p = self.u, self.w, self.p
 
-        
-        # Impose boundary conditions.
-        self._update_vel_bc_()
-        self._update_pressure_bc_()
-
+        # imposed boundary conditions:
+        _bc2d_ = _bc_ns2d_(u, w, p)
+        _bc2d_._update_vel_bc_()
+        _bc2d_._update_pressure_bc_()
 
         # if passive tracer used:
         if self.use_passive_tracer:
@@ -328,10 +277,14 @@ class NS2Dsolver(object):
             # add multiphase code here
             print( 'no multi-phase simulation' )
 
-        
-        # imposed boundary conditions:
-        _bc_ns2d_._update_vel_bc_()
-        _bc_ns2d_.
+        # let's keep it for multi-phase case:
+        # for χ=1, it would be for one-phase.
+        ρ = self.ρ1 * (1. - χ) + self.ρ2 * χ
+        μ = self.μ1 * (1. - χ) + self.μ2 * χ
+
+
+        # RJS for the intermediate velocity equations.
+        δu, δw  = self._cal_nonlinear_terms_()
 
         
 

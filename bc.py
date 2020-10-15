@@ -57,69 +57,6 @@ class _bc_ns2d_(object):
                 if boundary in (self.LEFT, self.RIGHT):
                     self._bc[boundary]['dpdn'] = 0.
 
-    
-    def _cal_νΔu_(self, μ, ρ, dt):
-        """
-        calculate viscous force 
-        """
-
-        δu = np.zeros( self.u.shape, np.float )
-        δw = np.zeros( self.w.shape, np.float )
-
-        μ_avg = 0.25 * ( μ[1:,1:] + μ[1:,:-1] + μ[:-1,1:] + μ[:-1,:-1] )
-
-        δ = self.grid.δ
-        u, w = self.u, self.w
-
-        # viscous terms in u-equation: (1/ρ)∂/∂x(2μ∂u/∂x) + (1/ρ)∂/∂y(μ(∂u/∂z+∂w/∂x))
-        # (1/ρ)∂/∂x(2μ∂u/∂x):
-        #  
-        δu[1:-1,1:-1] += ( μ[2:-1,1:-1] * (u[2:,1:-1] - u[1:-1,1:-1] ) - \
-                    μ[1:-2,1:-1] * ( u[1:-1,1:-1] - u[:-2,1:-1]) ) / \
-                    ( 0.5 * (δ[0]**2) * ρ[1:-1,1:-1] )
-
-        # ∂/∂y(μ(∂u/∂z+∂w/∂x)):
-        δu[1:-1,1:-1] += ( μ_avg[:,1:] * ( (u[:,2:] - u[:,1:-1]) / (δ[1]**2) + \
-                    (w[1:,1:] - w[:-1,1:]) / (δ[0] * δ[1]) ) - \
-                    μ_avg[:,:-1] * ( (u[:,1:-1] - u[:,:-2]) / (δ[1]**2) + \
-                    (w[1:,:-1] - w[:-1,:-1]) / (δ[0]*δ[1]) ) ) / \
-                    ρ[:,1:-1]
-
-        # at the boundaries: (dirichlet condition )
-        δu[0,1:-1] -= ( μ[1,1:-1] * (w[1,1:] - w[1,:-1]) - \
-                       μ[0,1:-1] * (w[0,1:] - w[0,:-1]) ) / \
-                      (0.5 * δ[0] * δ[1] * ρ[0,1:-1])
-        δu[-1,1:-1] -= ( μ[-1,1:-1] * (w[-1,1:] - w[-1,:-1]) - \
-                        μ[-2,1:-1] * (w[-2,1:] - w[-2,:-1]) ) / \
-                       (0.5 * δ[0] * δ[1] * ρ[-1,1:-1])
-
-        # // done: TODO need to evaulate the viscous terms it at the boundaries.
-        
-        # viscous terms in w-equation: (1/ρ)∂/∂y(2μ∂w/∂z) + (1/ρ)∂/∂x(μ(∂u/∂z+∂w/∂x))
-        # (1/ρ)∂/∂y(2μ∂w/∂z):
-        #
-        δw[1:-1,1:-1] += (μ[1:-1,2:-1] * (w[1:-1,2:] - w[1:-1,1:-1]) - \
-                        μ[1:-1,1:-2] * (w[1:-1,1:-1] - w[1:-1,:-2])) / \
-                        (0.5 * (δ[1]**2) * ρ[1:-1,1:-1])
-
-        # (1/ρ)∂/∂x(μ(∂u/∂z+∂w/∂x))
-        δw[1:-1,1:-1] += (μ_avg[1:,:] * ( (w[2:,:] - w[1:-1,:])/(δ[0]**2) + \
-                      (u[1:,1:] - u[1:,:-1]) / (δ[0]*δ[1]) ) - \
-                      μ_avg[:-1,:] * ( (w[1:-1,:] - w[:-2,:]) / (δ[0]**2) + \
-                      (u[:-1,1:] - u[:-1,:-1])/(δ[0]*δ[1]) ) ) / \
-                      ρ[1:-1,:]
-
-        # // done: TODO need to evaulate the viscous terms it at the boundaries.
-        # at the boundaries:
-        δw[1:-1,0] -= ( μ[1:-1,1] * (u[1:,1] - u[:-1,1]) - \
-                       μ[1:-1,0] * (u[1:,0] - u[:-1,0]) ) / \
-                      (0.5 * δ[0] * δ[1] * ρ[1:-1,0])
-        δw[1:-1,-1] -= ( μ[1:-1,-1] * (u[1:,-1] - u[:-1,-1]) - \
-                        μ[1:-1,-2] * (u[1:,-2] - u[:-1,-2]) ) / \
-                       (0.5 * δ[0] * δ[1] * ρ[1:-1,-1])
-
-        return δu * dt, δw * dt
-
 
     def _update_vel_bc_(self):
 
@@ -322,75 +259,75 @@ class _bc_ns2d_(object):
                 Ξ[0,:] = 2 * fun_ - β * (p[1,:] + p[0,:])        
 
 
-        def _update_intermediate_vel_bc_():
-            """
-            update bcs for intermediate velocities.
-            """
-            u, w = self.u, self.w
+    def _update_intermediate_vel_bc_(self):
+        """
+        update bcs for intermediate velocities.
+        """
+        u, w = self.u, self.w
 
-            # Interior boundaries
-            # Apply no-slip boundary conditions to obstacles.
-            # Setup masks that are 0 where velocities need to be updated,
-            # and 1 where they stay unmodified.
-            # Note that (mask & 1) has 1 in the ghost cells.
-            u_mask = ( self.mask[:-1,:] | self.mask[1:,:] ) & 1
-            w_mask = ( self.mask[:,:-1] | self.mask[:,1:] ) & 1
+        # Interior boundaries
+        # Apply no-slip boundary conditions to obstacles.
+        # Setup masks that are 0 where velocities need to be updated,
+        # and 1 where they stay unmodified.
+        # Note that (mask & 1) has 1 in the ghost cells.
+        u_mask = ( self.mask[:-1,:] | self.mask[1:,:] ) & 1
+        w_mask = ( self.mask[:,:-1] | self.mask[:,1:] ) & 1
 
-            # zero velocity inside and on the boundary of obstacles
-            u[:,:] *= ( self.mask[:-1,:] & self.mask[1:,:] & 1 )
-            # negate velocities inside obstacles
-            u[:,1:-2] -= ( 1 - u_mask[:,1:-2] ) * u[:,2:-1]
-            u[:,2:-1] -= ( 1 - u_mask[:,2:-1] ) * u[:,1:-2]
+        # zero velocity inside and on the boundary of obstacles
+        u[:,:] *= ( self.mask[:-1,:] & self.mask[1:,:] & 1 )
+        # negate velocities inside obstacles
+        u[:,1:-2] -= ( 1 - u_mask[:,1:-2] ) * u[:,2:-1]
+        u[:,2:-1] -= ( 1 - u_mask[:,2:-1] ) * u[:,1:-2]
 
-            # zero velocity inside and on the boundary of obstacles
-            w[:,:] *= (self.mask[:,:-1] & self.mask[:,1:] & 1 )
-            # negate velocities inside obstacles
-            w[1:-2,:] -= ( 1 - w_mask[1:-2,:] ) * w[2:-1,:]
-            w[2:-1,:] -= ( 1 - w_mask[2:-1,:] ) * w[1:-2,:] 
+        # zero velocity inside and on the boundary of obstacles
+        w[:,:] *= (self.mask[:,:-1] & self.mask[:,1:] & 1 )
+        # negate velocities inside obstacles
+        w[1:-2,:] -= ( 1 - w_mask[1:-2,:] ) * w[2:-1,:]
+        w[2:-1,:] -= ( 1 - w_mask[2:-1,:] ) * w[1:-2,:] 
 
-            # top boundary
-            _bc_ = self._bc[self.UP]
-            if 'w' in _bc_:
-                fun_ = _bc_['v']
-                if callable(fun_):
-                    for i in range(w.shape[0]):
-                        node = self.grid[i-0.5, w.shape[1]-1]
-                        w[i,-1] = fun_(node[0], node[1], self.time) * (self.mask[i,-2] & 1)
-                else:
-                    w[:,-1] = fun_     
+        # top boundary
+        _bc_ = self._bc[self.UP]
+        if 'w' in _bc_:
+            fun_ = _bc_['v']
+            if callable(fun_):
+                for i in range(w.shape[0]):
+                    node = self.grid[i-0.5, w.shape[1]-1]
+                    w[i,-1] = fun_(node[0], node[1], self.time) * (self.mask[i,-2] & 1)
+            else:
+                w[:,-1] = fun_     
 
-            # bottom boundary
-            _bc_ = self._bc[self.DOWN]
-            if 'w' in _bc_:
-                fun_ = _bc_['w']
-                if callable(fun_):
-                    for i in range(w.shape[0]):
-                        node = self.grid[i-0.5, 0]
-                        w[i,0] = fun_(node[0], node[1], self.time) * (self.mask[i,1] & 1)
-                else:
-                    w[:,0] = fun_ 
+        # bottom boundary
+        _bc_ = self._bc[self.DOWN]
+        if 'w' in _bc_:
+            fun_ = _bc_['w']
+            if callable(fun_):
+                for i in range(w.shape[0]):
+                    node = self.grid[i-0.5, 0]
+                    w[i,0] = fun_(node[0], node[1], self.time) * (self.mask[i,1] & 1)
+            else:
+                w[:,0] = fun_ 
 
-            # left boundary
-            _bc_ = self._bc[self.LEFT]
-            if 'u' in _bc_:
-                fun_ = _bc_['u']
-                if callable(fun_):
-                    for i in range(u.shape[1]):
-                        node = self.grid[u.shape[0]-1, i-0.5]
-                        u[-1,i] = fun_(node[0], node[1], self.time) * (self.mask[-2,i] & 1)
-                else:
-                    u[-1,:] = fun_
+        # left boundary
+        _bc_ = self._bc[self.LEFT]
+        if 'u' in _bc_:
+            fun_ = _bc_['u']
+            if callable(fun_):
+                for i in range(u.shape[1]):
+                    node = self.grid[u.shape[0]-1, i-0.5]
+                    u[-1,i] = fun_(node[0], node[1], self.time) * (self.mask[-2,i] & 1)
+            else:
+                u[-1,:] = fun_
 
-            # west boundary
-            _bc_ = self._bc[self.RIGHT]
-            if 'u' in _bc_:
-                fun_ = _bc_['u']
-                if callable(fun_):
-                    for i in range(u.shape[1]):
-                        node = self.grid[0, i-0.5]
-                        u[0,i] = fun_(node[0], node[1], self.time) * (self.mask[1,i] & 1)
-                else:
-                    u[0,:] = fun_
+        # west boundary
+        _bc_ = self._bc[self.RIGHT]
+        if 'u' in _bc_:
+            fun_ = _bc_['u']
+            if callable(fun_):
+                for i in range(u.shape[1]):
+                    node = self.grid[0, i-0.5]
+                    u[0,i] = fun_(node[0], node[1], self.time) * (self.mask[1,i] & 1)
+            else:
+                u[0,:] = fun_
 
         
                          
