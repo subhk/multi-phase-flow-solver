@@ -7,7 +7,7 @@ import numpy as np
 
 from domain import Domain
 from bc import _bc_ns2d_
-from force import fc
+from force import _Force_
 
 
 class NS2Dsolver(object):
@@ -283,8 +283,38 @@ class NS2Dsolver(object):
         μ = self.μ1 * (1. - χ) + self.μ2 * χ
 
 
-        # RJS for the intermediate velocity equations.
-        δu, δw  = self._cal_nonlinear_terms_()
+        # RHS for the intermediate velocity equations.
+        δu0, δw0  = self._cal_nonlinear_terms_(γ)
+        # call force class here
+        fc = _Force_(u, w, p)
+        # pressure gradienbt
+        δu1, δw1 = fc._cal_ΔP_(ρ, β)
+        # viscous force
+        δu2, δw2 = fc._cal_νΔu_(μ, ρ)
+
+        du = dt*( δu0 + δu1 + δu2 )
+        dw = dt*( δw0 + δw1 + δw2 )
+
+        # and ofcourse, gravity!
+        du += dt*self.gra
+        dw += dt*self.gra
+
+
+        # update time
+        self.time += dt
+        # update iteration
+        self.iter += 1
+
+        # imposed bcs to intermediate velocity.
+         
+
+
+
+
+
+
+
+
 
         
 
