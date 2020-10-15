@@ -29,28 +29,28 @@ class _bc_ns2d_(object):
         (x,y,t).
         """
 
-        for bounadry in bounadries.split('+'):
+        for boundary in bounadries.split('+'):
 
-            if bounadry.self._bc:
-                self._bc[bounadry].update(args)
+            if boundary.self._bc:
+                self._bc[boundary].update(args)
 
             if 'p' in args:
-                if bounadry == self.UP:
+                if boundary == self.UP:
                     self.mask[:,-1] = 3
-                elif bounadry == self.DOWN:
+                elif boundary == self.DOWN:
                     self.mask[:,0]= 3
-                elif bounadry == self.LEFT:
+                elif boundary == self.LEFT:
                     self.mask[0,:] = 3
-                elif bounadry == self.RIGHT:
+                elif boundary == self.RIGHT:
                     self.mask[-1,:] = 3
 
             if 'w' in args:
-                if bounadry in (self.UP, self.DOWN):
-                    self._bc[bounadry]['dpdn'] = 0.
+                if boundary in (self.UP, self.DOWN):
+                    self._bc[boundary]['dpdn'] = 0.
 
             if 'u' in args:
-                if bounadry in (self.LEFT, self.RIGHT):
-                    self._bc[bounadry]['dpdn'] = 0.
+                if boundary in (self.LEFT, self.RIGHT):
+                    self._bc[boundary]['dpdn'] = 0.
 
     
     def _cal_νΔu_(self, μ, ρ, dt):
@@ -319,7 +319,7 @@ class _bc_ns2d_(object):
 
         def _update_intermediate_vel_bc_():
             """
-            
+            update bcs for intermediate velocities.
             """
             u, w = self.u, self.w
 

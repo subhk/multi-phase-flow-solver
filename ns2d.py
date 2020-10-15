@@ -6,6 +6,7 @@ from functools import partial
 import numpy as np
 
 from domain import Domain
+from bc import _bc_ns2d_
 
 
 class NS2Dsolver(object):
@@ -27,6 +28,7 @@ class NS2Dsolver(object):
 
         # Initialise data structure:
         self.grid = grid
+        #self._bcs_ = _bcs_
         self.time = 0.
         self.p = np.zeros( np.array(grid.shape)+1, dtype=np.float64  )
         self.u = np.zeros( (self.p.shape[0]-1, np.p.shape[1]), dtype=np.float64 )
@@ -96,8 +98,8 @@ class NS2Dsolver(object):
             if callable(fun_):
                 # Calculate node offsets.
                 # True is converted to integer one, False to integer zero.
-                xOffset = 0.5 * (_ic_ in ('p', 'w', 'χ'))
-                yOffset = 0.5 * (_ic_ in ('p', 'u', 'χ'))
+                xOffset = 0.5 * ( _ic_ in ('p', 'w', 'χ') )
+                yOffset = 0.5 * ( _ic_ in ('p', 'u', 'χ') )
 
                 # iterate over all nodes.
                 for i in range(_set_ic_.shape[0]):
@@ -293,6 +295,19 @@ class NS2Dsolver(object):
     # now, simuation starts, finally!
     #
     def simuation(self, dt, β=1., γ=0.):
+        """
+        Simulation start
+        Args:
+            dt ([float]): [time styep value of the simulation.]
+
+            β:  factor in the projection method
+                See "H. P. Langtangen, K.-A. Mardal and R. Winther:
+                Numerical Methods for Incompressible Viscous Flow"
+            
+            γ:  Upwind differencing factor
+                See "Numerical Simulation in Fluid Dynamics: A Practical 
+                Introduction" (1997) by Griebel, Dornsheifer and Neunhoeffer.
+        """
 
         δ, mask, χ = self.grid.δ, self.mask, self.χ
         u, w, p = self.u, self.w, self.p
@@ -314,7 +329,9 @@ class NS2Dsolver(object):
             print( 'no multi-phase simulation' )
 
         
-        
+        # imposed boundary conditions:
+        _bc_ns2d_._update_vel_bc_()
+        _bc_ns2d_.
 
         
 
