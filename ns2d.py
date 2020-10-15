@@ -109,14 +109,14 @@ class NS2Dsolver(object):
 
 
 
-    def _remove_singularity(self):
-        """
-        if Neumann bcs apply all along the walls, then the 
-        Poisson equation becomes signular. This function fixes
-        it to have an unique sol.
-        """
+    # def _remove_singularity(self):
+    #     """
+    #     if Neumann bcs apply all along the walls, then the 
+    #     Poisson equation becomes signular. This function fixes
+    #     it to have an unique sol.
+    #     """
 
-        remove_singularity(self.mask)
+    #     remove_singularity(self.mask)
         
 
 
