@@ -13,7 +13,12 @@ class _bc_ns2d_(object):
     UP      = 'up'
     DOWN    = 'down'
 
-    def __init__(self, u, w, p, grid, **args):
+    def __init__(self, u, w, p, grid):
+
+        self.grid = grid
+        self.u = u
+        self.w = w
+        self.p = p
 
         self._bc = {self.LEFT:{}, self.RIGHT:{}, self.UP:{}, self.DOWN:{}}
         
