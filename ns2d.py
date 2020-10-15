@@ -61,15 +61,15 @@ class NS2Dsolver(object):
         if 'ν' in args: args['ν₁'] = args['ν']
         if 'ρ' in args: args['ρ₁'] = args['ρ']
 
-        if 'ρ₁' in args: self.ρ₁ = args['ρ_liquid']
-        if 'ρ_gas' in args: self.ρ_gas = args['ρ_gas']
+        if 'ρ₁' in args: self.ρ1 = args['ρ₁']
+        if 'ρ₂' in args: self.ρ2 = args['ρ₂']
 
         # calculating dynamic viscosity
-        if 'ν_liquid' in args:
-            args['μ_liquid'] = args['ν_liquid'] * self.ρ_liquid
+        if 'ν₁' in args:
+            args['μ₁'] = args['ν₁'] * self.ρ1
         
-        if 'ν_gas' in args:
-            args['ν_gas'] = args['ν_gas'] * self.ρ_gas
+        if 'ν₂' in args:
+            args['μ₂'] = args['ν₂'] * self.ρ2
         
         # store all the parameters
         for key in default_params:
@@ -241,6 +241,32 @@ class NS2Dsolver(object):
 
         return δu, δw 
 
+
+    def _cfl_dt_(self, safety=0.8):
+
+        """
+        Calculate a time stepping value that should give
+        a stable simulation. It will get called every iteration.
+        PS: may call it once 10 or some time-instant, could result
+        in more-effective: // TODO requires testing
+        """
+
+        δ = self.grid.δ
+        u = abs(self.u) + 1.e-7 * (self.u == 0.0) # avoid division by zero
+        w = abs(self.v) + 1.e-7 * (self.w == 0.0)
+
+        # may be multi-phase requires different criretia
+        # // TODO: need to dig some literatures.
+
+        ν = self.μ / self.ρ
+
+        dt1 = min( δ[0] / u.max(), δ[1] / w.max() )
+        dt2 = 0.5 / (ν * (delta**-2).sum())
+        dt3 = 2.0 * nu / max(u.max(), v.max())**2
+
+        return min(dt1, dt2, dt3) * safety_factor
+
+
     #
     # now, simuation starts, finally!
     #
@@ -285,9 +311,9 @@ class NS2Dsolver(object):
 
         # RHS for the intermediate velocity equations.
         δu0, δw0  = self._cal_nonlinear_terms_(γ)
-        # call force class here
+        
+        # pressure gradient
         fc = _Force_(u, w, p)
-        # pressure gradienbt
         δu1, δw1 = fc._cal_ΔP_(ρ, β)
         # viscous force
         δu2, δw2 = fc._cal_νΔu_(μ, ρ)
@@ -296,9 +322,8 @@ class NS2Dsolver(object):
         dw = dt*( δw0 + δw1 + δw2 )
 
         # and ofcourse, gravity!
-        du += dt*self.gra
-        dw += dt*self.gra
-
+        du += dt*self.gra[0]
+        dw += dt*self.gra[1]
 
         # update time
         self.time += dt
@@ -306,7 +331,40 @@ class NS2Dsolver(object):
         self.iter += 1
 
         # imposed bcs to intermediate velocity.
-         
+        _bc2d_._update_intermediate_vel_bc_() 
+
+        # calculate RHS of PPE
+        ppe = self._cal_RHS_poisson_eq_()
+
+        # Calculate boundary conditions for 'Ξ' and store the values in
+        # the ghost cells.   
+        # 
+        Ξ = np.zeros(p.shape, float)
+        self._update_phi_bc(Ξ, β)  
+
+        # Calculate pressure correction. (phi = p^{n+1} - β * p^(n))
+        # 'mask' defines where to use Dirichlet and Neumann boundary conditions.
+        p *= β               
+        p += poisson(Ξ, ppe, δ, mask, ρ, self._poisson_data, 3) # LU 
+
+        # Correct velocity on boundary for Dirichlet pressure boundary condition
+        # do not worry it's taken care by mask function
+        u[0,1:-1] -= dt * (Ξ[1,1:-1] - Ξ[0,1:-1]) / \
+            (δ[0] * ρ[0,1:-1]) * (mask[1,1:-1] & 1)
+
+        u[-1,1:-1] -= dt * (Ξ[-1,1:-1] - Ξ[-2,1:-1]) / \
+            (δ[0] * ρ[-1,1:-1]) * (mask[-2,1:-1] & 1)
+
+        w[1:-1,0] -= dt * (Ξ[1:-1,1] - Ξ[1:-1,0]) / \
+            (δ[1] * ρ[1:-1,0]) * (mask[1:-1,1] & 1)
+        w[1:-1,-1] -= dt * (Ξ[1:-1,-1] - Ξ[1:-1,-2]) / \
+            (δ[1] * ρ[1:-1,-1]) * (mask[1:-1,-2] & 1)
+
+        
+
+
+
+
 
 
 
