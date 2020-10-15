@@ -80,7 +80,15 @@ class _bc_ns2d_(object):
                     (w[1:,:-1] - w[:-1,:-1]) / (δ[0]*δ[1]) ) ) / \
                     ρ[:,1:-1]
 
-        # // TODO need to evaulate the viscous terms it at the boundaries.
+        # at the boundaries: (dirichlet condition )
+        δu[0,1:-1] -= ( μ[1,1:-1] * (w[1,1:] - w[1,:-1]) - \
+                       μ[0,1:-1] * (w[0,1:] - w[0,:-1]) ) / \
+                      (0.5 * δ[0] * δ[1] * ρ[0,1:-1])
+        δu[-1,1:-1] -= ( μ[-1,1:-1] * (w[-1,1:] - w[-1,:-1]) - \
+                        μ[-2,1:-1] * (w[-2,1:] - w[-2,:-1]) ) / \
+                       (0.5 * δ[0] * δ[1] * ρ[-1,1:-1])
+
+        # // done: TODO need to evaulate the viscous terms it at the boundaries.
         
         # viscous terms in w-equation: (1/ρ)∂/∂y(2μ∂w/∂z) + (1/ρ)∂/∂x(μ(∂u/∂z+∂w/∂x))
         # (1/ρ)∂/∂y(2μ∂w/∂z):
@@ -96,7 +104,14 @@ class _bc_ns2d_(object):
                       (u[:-1,1:] - u[:-1,:-1])/(δ[0]*δ[1]) ) ) / \
                       ρ[1:-1,:]
 
-        # // TODO need to evaulate the viscous terms it at the boundaries.
+        # // done: TODO need to evaulate the viscous terms it at the boundaries.
+        # at the boundaries:
+        δw[1:-1,0] -= ( μ[1:-1,1] * (u[1:,1] - u[:-1,1]) - \
+                       μ[1:-1,0] * (u[1:,0] - u[:-1,0]) ) / \
+                      (0.5 * δ[0] * δ[1] * ρ[1:-1,0])
+        δw[1:-1,-1] -= ( μ[1:-1,-1] * (u[1:,-1] - u[:-1,-1]) - \
+                        μ[1:-1,-2] * (u[1:,-2] - u[:-1,-2]) ) / \
+                       (0.5 * δ[0] * δ[1] * ρ[1:-1,-1])
 
         return δu * dt, δw * dt
 
