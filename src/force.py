@@ -7,7 +7,6 @@ import numpy as np
 
 class _Force_(object):
 
-
     def __init__(self, grid, u, w):
         
         self.grid = grid

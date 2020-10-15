@@ -78,9 +78,4 @@ class Domain(object):
     x = property( fget = lambda self: self._get_coordinate_[0] )
     z = property( fget = lambda self: self._get_coordinate_[1] )
 
-
-
-
-    
-
-    
+ 
