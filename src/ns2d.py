@@ -294,9 +294,8 @@ class NS2Dsolver(object):
         u, w, p = self.u, self.w, self.p
 
         # imposed boundary conditions:
-        _bc2d_ = bc_ns2d(u, w, p)
-        _bc2d_._update_vel_bc_()
-        _bc2d_._update_pressure_bc_()
+        self.bc2d._update_vel_bc_()
+        self.bc2d._update_pressure_bc_()
 
         # if passive tracer used: will add later on.
         if self.use_passive_tracer:
@@ -336,7 +335,7 @@ class NS2Dsolver(object):
         self.iter += 1
 
         # imposed bcs to intermediate velocity.
-        _bc2d_._update_intermediate_vel_bc_() 
+        self.bc2d._update_intermediate_vel_bc_() 
 
         # calculate RHS of PPE
         ppe = self._cal_RHS_poisson_eq_()
