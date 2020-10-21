@@ -5,8 +5,6 @@ for NS2D solver
 from functools import partial
 import numpy as np
 
-from domain import Domain
-#from bc import bc_ns2d
 from force import Force
 
 
@@ -317,7 +315,7 @@ class NS2Dsolver(object):
         δu0, δw0  = self._cal_nonlinear_terms_(γ)
         
         # pressure gradient
-        fc = _Force_(u, w, p)
+        fc = Force(u, w, p)
         δu1, δw1 = fc._cal_ΔP_(ρ, β)
         # viscous force
         δu2, δw2 = fc._cal_νΔu_(μ, ρ)
