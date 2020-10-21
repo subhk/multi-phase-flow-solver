@@ -5,7 +5,7 @@ This file contains different forcing terms of
 
 import numpy as np
 
-class _Force_(object):
+class Force(object):
 
     def __init__(self, grid, u, w):
         

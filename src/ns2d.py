@@ -6,8 +6,8 @@ from functools import partial
 import numpy as np
 
 from domain import Domain
-from bc import _bc_ns2d_
-from force import _Force_
+#from bc import bc_ns2d
+from force import Force
 
 
 class NS2Dsolver(object):
@@ -25,17 +25,28 @@ class NS2Dsolver(object):
     CURV_DAC = 'dac'
     CURV_MDAC = 'mdac'
 
-    def __init__(self, grid, **args):
+    def __init__(self, grid, bc2d, **kwargs):
 
         # Initialise data structure:
         self.grid = grid
+
+        # boundary conditions
+        self.bc2d = bc2d
+
         #self._bcs_ = _bcs_
         self.time = 0.
+
+        # all the prognostic variables.
         self.p = np.zeros( np.array(grid.shape)+1, dtype=np.float64  )
         self.u = np.zeros( (self.p.shape[0]-1, np.p.shape[1]), dtype=np.float64 )
         self.w = np.zeros( (self.p.shape[0], np.p.shape[1]-1), dtype=np.float64 )
+
         self.mask = np.ones(self.p.shape, int)
+
+        # disclaimer: not doing anything
         self.χ = np.zeros(self.p.shape, dype=np.float64 )  # vof value
+
+        # disclaimer: not doing anything
         self.tracer = np.zeros(self.p.shape, dtype=np.float64 )
         self._bc = {self.LEFT:{}, self.RIGHT:{}, self.UP:{}, self.DOWN:{}}
         self._bc_finalised = False
@@ -53,39 +64,39 @@ class NS2Dsolver(object):
 
         
         # optional parameters
-        if 'μ' in args: args['μ₁'] = args['μ']
-        if 'ν' in args: args['ν₁'] = args['ν']
-        if 'ρ' in args: args['ρ₁'] = args['ρ']
+        if 'μ' in kwargs: kwargs['μ₁'] = args['μ']
+        if 'ν' in kwargs: kwargs['ν₁'] = args['ν']
+        if 'ρ' in kwargs: kwargs['ρ₁'] = args['ρ']
 
-        if 'ρ₁' in args: self.ρ1 = args['ρ₁']
-        if 'ρ₂' in args: self.ρ2 = args['ρ₂']
+        if 'ρ₁' in kwargs: self.ρ1 = args['ρ₁']
+        if 'ρ₂' in kwargs: self.ρ2 = args['ρ₂']
 
         # calculating dynamic viscosity
-        if 'ν₁' in args:
-            args['μ₁'] = args['ν₁'] * self.ρ1
+        if 'ν₁' in kwargs:
+            kwargs['μ₁'] = kwargs['ν₁'] * self.ρ1
         
-        if 'ν₂' in args:
-            args['μ₂'] = args['ν₂'] * self.ρ2
+        if 'ν₂' in kwargs:
+            kwargs['μ₂'] = kwargs['ν₂'] * self.ρ2
         
         # store all the parameters
         for key in default_params:
-            if key in args:
-                self.__dict__[key] = args[key]
+            if key in kwargs:
+                self.__dict__[key] = kwargs[key]
                 
     
-    def _set_ic_(self, **args):
+    def _set_ic_(self, **kwargs):
         """
         set initial condition for the simuation.
         the arguments should be in terms of 'u', 'w', 'p', or 'χ',
         it can be constant or function of (x, z)
         """
 
-        for _ic_ in args:
+        for _ic_ in kwargs:
 
             if not _ic_ in ['u', 'w', 'p', 'χ']:
                 continue  # should not show any error in any case
                 
-            fun_ = args[_ic_]
+            fun_ = kwargs[_ic_]
 
             # if _ic_ = 'u', then _set_ic_ =self.u, likewise.
             # gets updated every time calling, cool!
@@ -264,7 +275,7 @@ class NS2Dsolver(object):
     #
     # now, simuation starts, finally!
     #
-    def simuation(self, dt, β=1., γ=0.):
+    def ns2d_simuation(self, dt, β=1., γ=0.):
         """
         Simulation start
         Args:
@@ -283,16 +294,16 @@ class NS2Dsolver(object):
         u, w, p = self.u, self.w, self.p
 
         # imposed boundary conditions:
-        _bc2d_ = _bc_ns2d_(u, w, p)
+        _bc2d_ = bc_ns2d(u, w, p)
         _bc2d_._update_vel_bc_()
         _bc2d_._update_pressure_bc_()
 
-        # if passive tracer used:
+        # if passive tracer used: will add later on.
         if self.use_passive_tracer:
             # add the tracer advection code.
             print( 'no passive tracer' )
         
-        # if multi-phase used:
+        # if multi-phase used: will add later on.
         if self.multi_phase:
             # add multiphase code here
             print( 'no multi-phase simulation' )
