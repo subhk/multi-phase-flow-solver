@@ -277,7 +277,7 @@ class NS2Dsolver(object):
         """
         Simulation start
         Args:
-            dt ([float]): [time styep value of the simulation.]
+            dt ([float]): [time step value of the simulation.]
 
             β:  factor in the projection method
                 See "H. P. Langtangen, K.-A. Mardal and R. Winther:
@@ -292,28 +292,29 @@ class NS2Dsolver(object):
         u, w, p = self.u, self.w, self.p
 
         # imposed boundary conditions:
-        self.bc2d._update_vel_bc_()
-        self.bc2d._update_pressure_bc_()
+        self.bc2d._update_vel_bc_(u, w)
+        self.bc2d._update_pressure_bc_(p)
 
         # if passive tracer used: will add later on.
-        if self.use_passive_tracer:
+        #if self.use_passive_tracer:
             # add the tracer advection code.
-            print( 'no passive tracer' )
+            #print( 'no passive tracer' )
         
         # if multi-phase used: will add later on.
-        if self.multi_phase:
+        #if self.multi_phase:
             # add multiphase code here
-            print( 'no multi-phase simulation' )
+            #print( 'no multi-phase simulation' )
 
         # let's keep it for multi-phase case:
         # for χ=1, it would be for one-phase.
         ρ = self.ρ1 * (1. - χ) + self.ρ2 * χ
         μ = self.μ1 * (1. - χ) + self.μ2 * χ
 
-
         # RHS for the intermediate velocity equations.
         δu0, δw0  = self._cal_nonlinear_terms_(γ)
         
+        ###
+        ### all the terms in RHS of the momentum equation
         # pressure gradient
         fc = Force(u, w, p)
         δu1, δw1 = fc._cal_ΔP_(ρ, β)
@@ -322,6 +323,9 @@ class NS2Dsolver(object):
 
         du = dt*( δu0 + δu1 + δu2 )
         dw = dt*( δw0 + δw1 + δw2 )
+
+        ###
+        ### end here!
 
         # and ofcourse, gravity!
         du += dt*self.gra[0]
