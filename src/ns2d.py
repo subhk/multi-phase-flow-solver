@@ -370,6 +370,12 @@ class NS2Dsolver(object):
         w[1:-1,-1] -= dt * (Ξ[1:-1,-1] - Ξ[1:-1,-2]) / \
             (δ[1] * ρ[1:-1,-1]) * (mask[1:-1,-2] & 1)
 
+    
+    @property
+    def ok(self):
+        """Deprecated. Use 'solver.proceed'."""
+        return self.proceed
+
         
 
 

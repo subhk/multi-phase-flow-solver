@@ -11,6 +11,8 @@ from src.bc import bc_ns2d
 
 import numpy as np
 import time
+import logging
+logger = logging.getLogger(__name__)
 
 
 # Domain should be defined as:
@@ -36,20 +38,23 @@ solver.stop_iteration = np.inf
 
 # Main-loop:
 try:
-    print( 'starting loop' )
+    logger.info('Starting loop')
     start_run_time = time.time()
 
     while solver.ok:
 
         dt = solver.compute_cfl_dt_()
-        solver.ns2d_simuation( dt, β=1., γ=0. )
+        solver.ns2d_simuation( dt )
 
-        
+except:
+    logger.error('Exception raised, triggering end of main loop.')
+    raise
+finally:
+    end_run_time = time.time()
+    logger.info('Iterations: %i' %solver.iteration)
+    logger.info('Sim end time: %f' %solver.sim_time)
+    logger.info('Run time: %.2f sec' %(end_run_time-start_run_time))
 
-
-
-except expression as identifier:
-    pass
 
 
 
