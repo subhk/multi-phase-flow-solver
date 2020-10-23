@@ -376,7 +376,11 @@ class NS2Dsolver(object):
         """Deprecated. Use 'solver.proceed'."""
         return self.proceed
 
-        
+    @property
+    def sim_time(self):
+        return self._sim_time.value
+
+    
 
 
 
