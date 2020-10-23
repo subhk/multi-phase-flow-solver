@@ -4,6 +4,7 @@ for NS2D solver
 """
 from functools import partial
 import numpy as np
+from poisson import *
 
 from force import Force
 
@@ -50,7 +51,7 @@ class NS2Dsolver(object):
         self._bc = {self.LEFT:{}, self.RIGHT:{}, self.UP:{}, self.DOWN:{}}
         self._bc_finalised = False
         self.iter = 0
-        self._poisson_data = poisson_data()
+        self.poisson_data = poisson_data()
         
         self._sim_time = []
 
@@ -354,7 +355,7 @@ class NS2Dsolver(object):
         # Calculate pressure correction. (phi = p^{n+1} - β * p^(n))
         # 'mask' defines where to use Dirichlet and Neumann boundary conditions.
         p *= β               
-        p += poisson(Ξ, ppe, δ, mask, ρ, self._poisson_data, 3) # LU 
+        p += poisson(Ξ, ppe, δ, mask, ρ, self.poisson_data, 3) # LU decomposition
 
         # Correct velocity on boundary for Dirichlet pressure boundary condition
         # do not worry it's taken care by mask function
