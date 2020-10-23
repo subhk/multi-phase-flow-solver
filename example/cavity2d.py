@@ -10,6 +10,7 @@ from src.domain import Domain
 from src.bc import bc_ns2d
 
 import numpy as np
+import time
 
 
 # Domain should be defined as:
@@ -32,8 +33,23 @@ solver.stop_sim_time = 10.
 solver.stop_wall_time = np.inf
 solver.stop_iteration = np.inf
 
-while solver:
 
-    dt = solver._cfl_dt_()
+# Main-loop:
+try:
+    print( 'starting loop' )
+    start_run_time = time.time()
 
-    solver.ns2d_simuation( dt, β=1., γ=0. )
+    while solver.ok:
+
+        dt = solver.compute_cfl_dt_()
+        solver.ns2d_simuation( dt, β=1., γ=0. )
+
+        
+
+
+
+except expression as identifier:
+    pass
+
+
+

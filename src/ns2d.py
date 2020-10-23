@@ -251,7 +251,7 @@ class NS2Dsolver(object):
         return δu, δw 
 
 
-    def _cfl_dt_(self, safety=0.8):
+    def compute_cfl_dt_(self, safety=0.8):
         """
         Calculate a time stepping value that should give
         a stable (and correct!) simulation. It will get called every iteration.
