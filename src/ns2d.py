@@ -46,9 +46,12 @@ class NS2Dsolver(object):
 
         # disclaimer: not doing anything
         self.tracer = np.zeros(self.p.shape, dtype=np.float64 )
+
         self._bc = {self.LEFT:{}, self.RIGHT:{}, self.UP:{}, self.DOWN:{}}
         self._bc_finalised = False
         self.iter = 0
+        self._poisson_data = poisson_data()
+        
         self._sim_time = []
 
         #default paramters:
