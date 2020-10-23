@@ -2,7 +2,7 @@
 This file contains the boundary condition for the
 velocities and pressure for NS2D solver
 """
-from functools import partial
+#from functools import partial
 import numpy as np
 
 

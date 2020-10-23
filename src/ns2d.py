@@ -4,7 +4,7 @@ for NS2D solver
 """
 from functools import partial
 import numpy as np
-from poisson import *
+from ..poisson import *
 
 from force import Force
 
