@@ -7,7 +7,7 @@ import numpy as np
 from ..poisson import *
 
 from force import Force
-
+import time
 
 class NS2Dsolver(object):
 
@@ -379,6 +379,12 @@ class NS2Dsolver(object):
     @property
     def sim_time(self):
         return self._sim_time.value
+
+    def get_world_time(self):
+        self._float_array[0] = time.time()
+        return self._float_array[0]
+
+    
 
     
 
