@@ -9,6 +9,9 @@ from ..poisson import *
 from force import Force
 import time
 
+import logging
+logger = logging.getLogger(__name__.split('.')[-1])
+
 class NS2Dsolver(object):
 
     LEFT    = 'left'
@@ -53,7 +56,17 @@ class NS2Dsolver(object):
         self.iter = 0
         self.poisson_data = poisson_data()
         
-        self._sim_time = []
+        self.sim_time = []
+        self.start_time = self.get_world_time()
+
+        # Attributes
+        self.sim_time = self.initial_sim_time = 0.
+        self.iteration = self.initial_iteration = 0
+
+        # Default integration parameters
+        self.stop_sim_time = np.inf
+        self.stop_wall_time = np.inf
+        self.stop_iteration = np.inf
 
         #default paramters:
         default_params = {'ρ₁': 1000, 'ρ₂': 1000, 
@@ -85,7 +98,29 @@ class NS2Dsolver(object):
             if key in kwargs:
                 self.__dict__[key] = kwargs[key]
                 
-    
+    @property
+    def ok(self):
+        """Check that current time and iteration pass stop conditions."""
+        if self.sim_time >= self.stop_sim_time:
+            logger.info('Simulation stop time reached.')
+            return False
+        elif (self.get_world_time() - self.start_time) >= self.stop_wall_time:
+            logger.info('Wall stop time reached.')
+            return False
+        elif self.iteration >= self.stop_iteration:
+            logger.info('Stop iteration reached.')
+            return False
+        else:
+            return True
+
+    @property
+    def sim_time(self):
+        return self._sim_time.value
+
+    def get_world_time(self):
+        self._float_array[0] = time.time()
+        return self._float_array[0]
+
     def _set_ic_(self, **kwargs):
         """
         set initial condition for the simuation.
@@ -370,19 +405,7 @@ class NS2Dsolver(object):
         w[1:-1,-1] -= dt * (Ξ[1:-1,-1] - Ξ[1:-1,-2]) / \
             (δ[1] * ρ[1:-1,-1]) * (mask[1:-1,-2] & 1)
 
-    
-    @property
-    def ok(self):
-        """Deprecated. Use 'solver.proceed'."""
-        return self.proceed
 
-    @property
-    def sim_time(self):
-        return self._sim_time.value
-
-    def get_world_time(self):
-        self._float_array[0] = time.time()
-        return self._float_array[0]
 
     
 
