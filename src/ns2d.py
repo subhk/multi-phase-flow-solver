@@ -6,7 +6,7 @@ from functools import partial
 import numpy as np
 from ..poisson import *
 
-from force import Force
+from .force import Force
 import time
 
 import logging
@@ -59,11 +59,11 @@ class NS2Dsolver(object):
         self.sim_time = []
         self.start_time = self.get_world_time()
 
-        # Attributes
+        # Attributes:
         self.sim_time = self.initial_sim_time = 0.
         self.iteration = self.initial_iteration = 0
 
-        # Default integration parameters
+        # Default integration parameters:
         self.stop_sim_time = np.inf
         self.stop_wall_time = np.inf
         self.stop_iteration = np.inf
@@ -162,8 +162,7 @@ class NS2Dsolver(object):
     #     Poisson equation becomes signular. This function fixes
     #     it to have an unique sol.
     #     """
-
-    #     remove_singularity(self.mask)
+    #       have to add it!!!!
         
 
     def _cal_RHS_poisson_eq_(self, dt):
