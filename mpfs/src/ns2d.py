@@ -53,10 +53,8 @@ class NS2Dsolver(object):
 
         self._bc = {self.LEFT:{}, self.RIGHT:{}, self.UP:{}, self.DOWN:{}}
         self._bc_finalised = False
-        self.iter = 0
         self.poisson_data = poisson_data()
         
-        self.sim_time = []
         self.start_time = self.get_world_time()
 
         # Attributes:
@@ -79,12 +77,12 @@ class NS2Dsolver(object):
 
         
         # optional parameters
-        if 'μ' in kwargs: kwargs['μ₁'] = args['μ']
-        if 'ν' in kwargs: kwargs['ν₁'] = args['ν']
-        if 'ρ' in kwargs: kwargs['ρ₁'] = args['ρ']
+        if 'μ' in kwargs: kwargs['μ₁'] = kwargs['μ']
+        if 'ν' in kwargs: kwargs['ν₁'] = kwargs['ν']
+        if 'ρ' in kwargs: kwargs['ρ₁'] = kwargs['ρ']
 
-        if 'ρ₁' in kwargs: self.ρ1 = args['ρ₁']
-        if 'ρ₂' in kwargs: self.ρ2 = args['ρ₂']
+        if 'ρ₁' in kwargs: self.ρ1 = kwargs['ρ₁']
+        if 'ρ₂' in kwargs: self.ρ2 = kwargs['ρ₂']
 
         # calculating dynamic viscosity
         if 'ν₁' in kwargs:
@@ -97,7 +95,8 @@ class NS2Dsolver(object):
         for key in default_params:
             if key in kwargs:
                 self.__dict__[key] = kwargs[key]
-                
+
+            
     @property
     def ok(self):
         """Check that current time and iteration pass stop conditions."""
@@ -370,9 +369,9 @@ class NS2Dsolver(object):
         dw += dt*self.gra[1]
 
         # update time
-        self.time += dt
+        self.sim_time += dt
         # update iteration
-        self.iter += 1
+        self.iteration += 1
 
         # imposed bcs to intermediate velocity.
         self.bc2d._update_intermediate_vel_bc_() 

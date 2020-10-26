@@ -46,6 +46,11 @@ try:
         dt = solver.compute_cfl_dt_()
         solver.ns2d_simuation( dt )
 
+        if (solver.iteration-1) % 10 == 0:
+            logger.info('Iteration: %i, Time: %e, dt: %e' %(solver.iteration, solver.sim_time, dt))
+
+        
+
 except:
     logger.error('Exception raised, triggering end of main loop.')
     raise
