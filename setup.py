@@ -3,7 +3,7 @@
 from distutils.core import setup, Extension
 import numpy
 
-poisson_ext = Extension('mpfs/poisson', 
+poisson_ext = Extension('poisson', 
     ['poisson/colamd.c',
     'poisson/dasum.c',
     'poisson/daxpy.c',
@@ -58,9 +58,10 @@ setup(name='mpfs',
     author_email='subhajitkar19@gmail.com',
     description="A framework for solving 2D Navier-Stokes equation.",
     url='https://github.com/subhk/multi-phase-flow-solver',
-    # py_modules=['kmkns.NavierStokes', 
-	# 	'kmkns.Keyboard', 
-	# 	'kmkns.csf'],
+    py_modules=['mpfs.bc', 
+	 	'mpfs.domain', 
+	 	'mpfs.force',
+        'mpfs.ns2d'],
     ext_package='mpfs',
     ext_modules=[poisson_ext],
     )
