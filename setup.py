@@ -51,8 +51,6 @@ poisson_ext = Extension('poisson',
 	include_dirs=[numpy.get_include()], 
 	define_macros=[('NO_TIMER', None)])
 
-vof_ext = Extension('vof', ['vof/main.cpp', 'vof/vof.cpp'], 
-    include_dirs=[numpy.get_include()])
 
 setup(name='mpfs', 
     version='1.0',
@@ -63,7 +61,7 @@ setup(name='mpfs',
     py_modules=['kmkns.NavierStokes', 
 		'kmkns.Keyboard', 
 		'kmkns.csf'],
-    ext_package='kmkns',
-    ext_modules=[poisson_ext, vof_ext],
+    ext_package='mpfs',
+    ext_modules=[poisson_ext],
     )
 
