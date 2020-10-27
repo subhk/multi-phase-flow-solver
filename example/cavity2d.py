@@ -6,7 +6,7 @@ boundary where only horizontal velocity is specified.
 
 from numpy.lib.function_base import gradient
 from mpfs.src import ns2d as nst
-from mpfs.src import domain as dom
+from mpfs.src import domain as de
 from mpfs.src import bc
 
 import numpy as np
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 # first argument  : domain size in x-direction: x ∈ [x_min, x_max]
 # second argument : domain size in z-direction: z ∈ [z_min, z_max]
 # third argument  : no. of grid points in x & z-direction.
-grid = dom.Domain( [0, 1], [0, 1], [100, 100] )
+grid = de.Domain( [0, 1], [0, 1], [100, 100] )
 
 # setting up the boundary condition
 bc_2d = bc.bc_ns2d(grid)

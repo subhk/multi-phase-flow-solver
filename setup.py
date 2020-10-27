@@ -3,7 +3,7 @@
 from distutils.core import setup, Extension
 import numpy
 
-poisson_ext = Extension('poisson', 
+poisson_ext = Extension('mpfs/poisson', 
     ['poisson/colamd.c',
     'poisson/dasum.c',
     'poisson/daxpy.c',
