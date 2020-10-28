@@ -4,9 +4,9 @@ with no-slip boundary condition except at the top
 boundary where only horizontal velocity is specified.
 """
 
-from mpfs.src import ns2d as nst
-from mpfs.src import domain as de
-from mpfs.src import bc
+from mpfs.ns2d import NS2Dsolver 
+from mpfs.domain import Domain 
+from mpfs.bc import bc_ns2d 
 
 import numpy as np
 import time
@@ -18,16 +18,16 @@ logger = logging.getLogger(__name__)
 # first argument  : domain size in x-direction: x ∈ [x_min, x_max]
 # second argument : domain size in z-direction: z ∈ [z_min, z_max]
 # third argument  : no. of grid points in x & z-direction.
-grid = de.Domain( [0, 1], [0, 1], [100, 100] )
+grid = Domain( [0, 1], [0, 1], [100, 100] )
 
 # setting up the boundary condition
-bc_2d = bc.bc_ns2d(grid)
+bc_2d = bc_ns2d(grid)
 bc_2d._set_bc_( 'left+right', u=0, v=0 )
 bc_2d._set_bc_( 'down', u=0, v=0 )
 bc_2d._set_bc_( 'up', u=0.1, v=0 )
 
 # setting up the NS2D-solver
-solver = nst.NS2Dsolver( grid, bc_2d, ν=1.e-4 )
+solver = NS2Dsolver( grid, bc_2d, ν=1.e-4 )
 
 # Integration parameters
 solver.stop_sim_time = 10.
@@ -47,8 +47,6 @@ try:
 
         if (solver.iteration-1) % 10 == 0:
             logger.info('Iteration: %i, Time: %e, dt: %e' %(solver.iteration, solver.sim_time, dt))
-
-        
 
 except:
     logger.error('Exception raised, triggering end of main loop.')
