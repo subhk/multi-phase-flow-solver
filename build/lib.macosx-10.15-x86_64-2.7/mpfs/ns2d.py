@@ -383,7 +383,7 @@ class NS2Dsolver(object):
         # the ghost cells.   
         # 
         Ξ = np.zeros(p.shape, np.float64)
-        self.bc2d._update_Ξ_bc(p, Ξ, β)  
+        self.bc2d._update_xi_bc(p, Ξ, β)  
 
         # Calculate pressure correction. (phi = p^{n+1} - β * p^(n))
         # 'mask' defines where to use Dirichlet and Neumann boundary conditions.

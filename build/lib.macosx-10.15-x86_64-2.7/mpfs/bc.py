@@ -210,7 +210,7 @@ class bc_ns2d(object):
                 p[0,:] = 2. * fun_ - p[1,:]
 
 
-    def _update_Ξ_bc_(self, p, Ξ, β ):
+    def _update_xi_bc_(self, p, xi, β ):
 
         #p = self.p
         
@@ -221,9 +221,9 @@ class bc_ns2d(object):
             if callable(fun_):
                 for i in range(p.shape[0]):
                     node = self.grid[i-0.5, p.shape[1]-2]
-                    Ξ[i,-1] = 2. * fun_(node[0], node[1], self.time) - β * (p[i,-2] + p[i,-1])
+                    xi[i,-1] = 2. * fun_(node[0], node[1], self.time) - β * (p[i,-2] + p[i,-1])
             else:
-                Ξ[:,-1] = 2 * fun_ - β * (p[:,-2] + p[:,-1])
+                xi[:,-1] = 2 * fun_ - β * (p[:,-2] + p[:,-1])
         
         # bottom-boundary condition
         _bc_ = self._bc[self.DOWN]
@@ -232,9 +232,9 @@ class bc_ns2d(object):
             if callable(fun_):
                 for i in range(p.shape[0]):
                     node = self.grid[i-0.5, 0]
-                    Ξ[i,0] = 2. * fun_(node[0], node[1], self.time) - β * (p[i,1] + p[i,0])
+                    xi[i,0] = 2. * fun_(node[0], node[1], self.time) - β * (p[i,1] + p[i,0])
             else:
-                Ξ[:,0] = 2. * fun_ - β * (p[:,1] + p[:,0])        
+                xi[:,0] = 2. * fun_ - β * (p[:,1] + p[:,0])        
 
         # left-boundary condition
         _bc_ = self._bc[self.LEFT]
@@ -243,9 +243,9 @@ class bc_ns2d(object):
             if callable(fun_):
                 for i in range(p.shape[1]):
                     node = self.grid[p.shape[0]-2, i-0.5]
-                    Ξ[-1,i] = 2. * f(node[0], node[1], self.time) - β * (p[-2,i] + p[-1,i])
+                    xi[-1,i] = 2. * f(node[0], node[1], self.time) - β * (p[-2,i] + p[-1,i])
             else:
-                Ξ[-1,:] = 2 * fun_ - β * (p[-2,:] + p[-1,:])        
+                xi[-1,:] = 2 * fun_ - β * (p[-2,:] + p[-1,:])        
 
         # right-boundary condition
         _bc_ = self._bc[self.RIGHT]
@@ -254,9 +254,9 @@ class bc_ns2d(object):
             if callable(fun_):
                 for i in range(p.shape[1]):
                     node = self.grid[0, i-0.5]
-                    Ξ[0,i] = 2. * fun_(node[0], node[1], self.time) - β * (p[1,i] + p[0,i])
+                    xi[0,i] = 2. * fun_(node[0], node[1], self.time) - β * (p[1,i] + p[0,i])
             else:
-                Ξ[0,:] = 2 * fun_ - β * (p[1,:] + p[0,:])        
+                xi[0,:] = 2 * fun_ - β * (p[1,:] + p[0,:])        
 
 
     def _update_intermediate_vel_bc_(self, u, w, mask, time):

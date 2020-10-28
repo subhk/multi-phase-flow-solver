@@ -210,7 +210,7 @@ class bc_ns2d(object):
                 p[0,:] = 2. * fun_ - p[1,:]
 
 
-    def _update_Ξ_bc_(self, p, Ξ, β ):
+    def _update_xi_bc_(self, p, Ξ, β ):
 
         #p = self.p
         
