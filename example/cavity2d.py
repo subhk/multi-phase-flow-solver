@@ -4,7 +4,6 @@ with no-slip boundary condition except at the top
 boundary where only horizontal velocity is specified.
 """
 
-from numpy.lib.function_base import gradient
 from mpfs.src import ns2d as nst
 from mpfs.src import domain as de
 from mpfs.src import bc
