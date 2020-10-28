@@ -217,7 +217,7 @@ static void poisson_data_dealloc(PyObject* self)
 static int poisson_data_compare(PyObject* self, PyObject* other)
 {
 	poisson_data* obj = (poisson_data*)self;
-	PyObject* tmp = PyInt_FromLong(ptr2long(obj->data));
+	PyObject* tmp = PyLong_FromLong(ptr2long(obj->data));
 	int result = (tmp ? PyObject_Compare(tmp, other) : 0);
 	Py_XDECREF(tmp);
 	return result;
@@ -226,7 +226,7 @@ static int poisson_data_compare(PyObject* self, PyObject* other)
 static long poisson_data_hash(PyObject* self)
 {
 	poisson_data* obj = (poisson_data*)self;
-	PyObject *tmp = PyInt_FromLong(ptr2long(obj->data));
+	PyObject *tmp = PyLong_FromLong(ptr2long(obj->data));
 	long result = (tmp ? PyObject_Hash(tmp) : -1);
 	Py_XDECREF(tmp);
 	return result;
@@ -443,31 +443,31 @@ static void poisson_main(PyArrayObject* phi, PyArrayObject* f, PyArrayObject* de
 	}
 }
 
-static char poisson_doc[] = "Ξ = poisson(phi, f, delta, mask, rho[, data, reuse])\n"
+static char poisson_doc[] = "phi = poisson(phi, f, delta, mask, rho[, data, reuse])\n"
 	"\n"
-	"Solve the Poisson equation \"∇⋅(∇(Ξ)/ρ) = -ℝ\".\n"
+	"Solve the Poisson equation \"div(grad(phi)/rho) = -f\".\n"
 	"\n"
-	"The ghost nodes of 'Ξ' contains information about the pressure boundary\n"
+	"The ghost nodes of 'phi' contains information about the pressure boundary\n"
 	"condition value. The ghost nodes of 'mask' contains information about the\n"
 	"pressure boundary condition type:\n"
-	"  mask = 1  :  Ξ_input = (Ξ_0 - Ξ_1)\n"
-	"  mask = 2  :  Ξ_input = (Ξ_0)\n"
-	"  mask = 3  :  Ξ_input = (Ξ_0 + Ξ_1)\n"
-	"Ξ_0 is the ghost cell node, Ξ_1 is the node inside the domain.\n"
-	"Ξ_input is the ghost cell node of 'Ξ' when passed to poisson().\n"
-	"Ξ_0 and Ξ_1 are the values of 'Ξ' when returning from the function.\n"
+	"  mask = 1  :  phi_input = (phi_0 - phi_1)\n"
+	"  mask = 2  :  phi_input = (phi_0)\n"
+	"  mask = 3  :  phi_input = (phi_0 + phi_1)\n"
+	"phi_0 is the ghost cell node, phi_1 is the node inside the domain.\n"
+	"phi_input is the ghost cell node of 'phi' when passed to poisson().\n"
+	"phi_0 and phi_1 are the values of 'phi' when returning from the function.\n"
 	"\n"
 	"For interior cells, mask has the following interpretation:\n"
 	"  mask = 0  :  obstacle cell, Neumann boundary condition\n"
 	"  mask = 1  :  fluid cell, no boundaries\n"
-	"  mask = 3  :  fluid cell, Ξ fixed to zero\n"
+	"  mask = 3  :  fluid cell, phi fixed to zero\n"
 	"\n"
 	"  Input/output:\n"
-	"  - Ξ   = solution of equation. The ghost cell values must have been set\n"
+	"  - phi   = solution of equation. The ghost cell values must have been set\n"
 	"            on entry.\n"
 	"  Input:\n"
-	"  - ℝ     = right hand side of equation.\n"
-	"  - δ     = grid spacing.\n"
+	"  - f     = right hand side of equation.\n"
+	"  - delta = grid spacing.\n"
 	"  - mask  = array of boundary conditions.\n"
 	"  - rho   = left hand side coefficient.\n"
 	"  - data  = data structure holding permutations and factors that may be\n"

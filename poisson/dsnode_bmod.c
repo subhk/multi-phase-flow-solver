@@ -24,8 +24,9 @@
 
 #include "slu_ddefs.h"
 
-int dlsolve( int, int, double*, double* );
-int dmatvec( int, int, int, double*, double*, double* );
+int dlsolve( int nsupr, int nsupc, double *lusup, double *lusup0 );
+int dmatvec( int nsupr, int nrow, int nsupc, double *lusup, 
+			double *lusup0, double *tempv );
 
 /*! \brief Performs numeric block updates within the relaxed snode. 
  */
