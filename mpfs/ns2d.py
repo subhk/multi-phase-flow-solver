@@ -67,9 +67,9 @@ class NS2Dsolver(object):
         self.stop_iteration = np.inf
 
         #default paramters:
-        default_params = {'ρ₁': 1000, 'ρ₂': 1000, 
-                        'μ₁': 1.0, 'μ₂': 1.0,
-                        'σ': 0.0, 'gra': [0.0, 0.0],
+        default_params = {'rho1': 1000, 'rho2': 1000, 
+                        'mu1': 1.0, 'mu2': 1.0,
+                        'sigma': 0.0, 'gra': [0.0, 0.0],
                         'multi_phase': False, 'use_passive_tracer': False }
 
         for key in default_params:
@@ -77,9 +77,9 @@ class NS2Dsolver(object):
 
         
         # optional parameters
-        if 'μ' in kwargs: kwargs['μ₁'] = kwargs['μ']
-        if 'ν' in kwargs: kwargs['ν₁'] = kwargs['ν']
-        if 'ρ' in kwargs: kwargs['ρ₁'] = kwargs['ρ']
+        if 'mu'  in kwargs: kwargs['μ₁'] = kwargs['μ']
+        if 'mu'  in kwargs: kwargs['ν₁'] = kwargs['ν']
+        if 'rho' in kwargs: kwargs['ρ₁'] = kwargs['ρ']
 
         if 'ρ₁' in kwargs: self.ρ1 = kwargs['ρ₁']
         if 'ρ₂' in kwargs: self.ρ2 = kwargs['ρ₂']
