@@ -66,7 +66,7 @@ class Domain(object):
         elif i == 1:
             lamb = np.linspace( self.z_coord[0], self.z_coord[1], self.size+1 ) 
         else:
-            raise ValueError, 'i must 0 or 1'
+            raise ValueError('i must 0 or 1')
 
         sl = ( slice(None), )
         n  = len(self.sze)-1-i 

@@ -66,7 +66,7 @@ class bc_ns2d(object):
         _bc_ = self._bc[self.UP]
         if 'dwdn' in _bc_:
             if _bc_['dwdn'] != 0:
-                raise ValueError, 'dw/dn must be zero.'
+                raise ValueError('dw/dn must be zero.')
             w[:,-1] = w[:,-2] # extrapolate
     
         # done: TODO : require to handle 'w'-condition: it is done in 
@@ -74,7 +74,7 @@ class bc_ns2d(object):
         
         if 'dudn' in _bc_:
             if _bc_['dudn'] != 0:
-                raise ValueError, 'du/dn must be zero.'
+                raise ValueError('du/dn must be zero.') 
             u[:,-1] = u[:,-2] # extrapolate
         elif 'u' in _bc_:
             fun_ = _bc_['u']
@@ -89,12 +89,12 @@ class bc_ns2d(object):
         _bc_ = self._bc[self.DOWN]
         if 'dwdn' in _bc_:
             if _bc_['dwdn'] != 0:
-                raise ValueError, 'dw/dn must be zero.'
+                raise ValueError('dw/dn must be zero.') 
             w[:,0] = w[:,1]
         
         if 'dudn' in _bc_:
             if _bc_['dudn'] != 0:
-                raise ValueError, 'du/dn must be zero.'
+                raise ValueError('du/dn must be zero.') 
             u[:,0] = u[:,1]
         elif 'u' in _bc_:
             fun_ = _bc_['u']
@@ -109,12 +109,12 @@ class bc_ns2d(object):
         _bc_ = self._bc[self.LEFT]
         if 'dudn' in _bc_:
             if _bc_['dudn'] != 0:
-                raise ValueError, 'du/dn must be zero.'
+                raise ValueError('du/dn must be zero.') 
             u[-1,:] = u[-2,:]
         
         if 'dwdn' in _bc_:
             if _bc_['dvdn'] != 0:
-                raise ValueError, 'dw/dn must be zero.'
+                raise ValueError('dw/dn must be zero.') 
             w[-1,:] = w[-2,:]
         elif 'w' in _bc_:
             fun_ = _bc_['w']
@@ -129,12 +129,12 @@ class bc_ns2d(object):
         _bc_ = self._bc[self.RIGHT]
         if 'dudn' in _bc_:
             if _bc_['dudn'] != 0:
-                raise ValueError, 'du/dn must be zero.'
+                raise ValueError('du/dn must be zero.') 
             u[0,:] = u[1,:]
         
         if 'dwdn' in _bc_:
             if _bc_['dwdn'] != 0:
-                raise ValueError, 'dw/dn must be zero.'
+                raise ValueError('dw/dn must be zero.') 
             w[0,:] = w[1,:]
         elif 'w' in _bc_:
             fun_ = _bc_['w']
@@ -153,7 +153,7 @@ class bc_ns2d(object):
         _bc_ = self._bc[self.UP]
         if 'dpdn' in _bc_:
             if _bc_['dpdn'] != 0:
-                raise ValueError, 'dp/dn must be zero.'
+                raise ValueError('dp/dn must be zero.') 
             p[:,-1] = p[:,-2]
         elif 'p' in _bc_:
             fun_ = _bc_['p']
@@ -168,7 +168,7 @@ class bc_ns2d(object):
         _bc_ = self._bc[self.DOWN]
         if 'dpdn' in _bc_:
             if _bc_['dpdn'] != 0:
-                raise ValueError, 'dp/dn must be zero.'
+                raise ValueError('dp/dn must be zero.') 
             p[:,0] = p[:,1]
         elif 'p' in _bc_:
             fun_ = _bc_['p']
@@ -183,7 +183,7 @@ class bc_ns2d(object):
         _bc_ = self._bc[self.LEFT]
         if 'dpdn' in _bc_:
             if _bc_['dpdn'] != 0:
-                raise ValueError, 'dp/dn must be zero.'
+                raise ValueError('dp/dn must be zero.') 
             p[-1,:] = p[-2,:]
         elif 'p' in _bc_:
             fun_ = _bc_['p']
@@ -198,7 +198,7 @@ class bc_ns2d(object):
         _bc_ = self._bc[self.RIGHT]
         if 'dpdn' in _bc_:
             if _bc_['dpdn'] != 0:
-                raise ValueError, 'dp/dn must be zero.'
+                raise ValueError('dp/dn must be zero.') 
             p[0,:] = p[1,:]
         elif 'p' in _bc_:
             fun_ = _bc_['p']
