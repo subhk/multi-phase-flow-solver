@@ -218,7 +218,7 @@ static int poisson_data_compare(PyObject* self, PyObject* other)
 {
 	poisson_data* obj = (poisson_data*)self;
 	PyObject* tmp = PyLong_FromLong(ptr2long(obj->data));
-	int result = (tmp ? PyObject_RichCompare(tmp, other) : 0);
+	int result = (tmp ? PyObject_Compare(tmp, other) : 0);
 	Py_XDECREF(tmp);
 	return result;
 }

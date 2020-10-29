@@ -62,19 +62,19 @@ class Domain(object):
 
         s  = np.zeros( self.sze + 1, np.float )
         if i == 0:
-            λ = np.linspace( self.x_coord[0], self.x_coord[1], self.size+1 )
+            lamb = np.linspace( self.x_coord[0], self.x_coord[1], self.size+1 )
         elif i == 1:
-            λ = np.linspace( self.z_coord[0], self.z_coord[1], self.size+1 ) 
+            lamb = np.linspace( self.z_coord[0], self.z_coord[1], self.size+1 ) 
         else:
             raise ValueError, 'i must 0 or 1'
 
         sl = ( slice(None), )
         n  = len(self.sze)-1-i 
-        for j in range(len(λ)): s[sl*i+(j,)+sl*n] = λ[j]
+        for j in range(len(lamb)): s[sl*i+(j,)+sl*n] = lamb[j]
         return s 
 
     shape = property( fget = _get_shape_ )
-    δ = property( fget = _get_node_spacing_ )
+    d = property( fget = _get_node_spacing_ )
     x = property( fget = lambda self: self._get_coordinate_[0] )
     z = property( fget = lambda self: self._get_coordinate_[1] )
 

@@ -77,19 +77,20 @@ class NS2Dsolver(object):
 
         
         # optional parameters
-        if 'mu'  in kwargs: kwargs['μ₁'] = kwargs['μ']
-        if 'mu'  in kwargs: kwargs['ν₁'] = kwargs['ν']
-        if 'rho' in kwargs: kwargs['ρ₁'] = kwargs['ρ']
+        if 'mu'  in kwargs: kwargs['mu1']  = kwargs['mu']
+        if 'nu'  in kwargs: kwargs['nu1']  = kwargs['nu']
+        if 'rho' in kwargs: kwargs['rho1'] = kwargs['rho']
 
-        if 'ρ₁' in kwargs: self.ρ1 = kwargs['ρ₁']
-        if 'ρ₂' in kwargs: self.ρ2 = kwargs['ρ₂']
+        # options for two-phase
+        if 'rho1' in kwargs: self.rho1 = kwargs['rho1']
+        if 'rho2' in kwargs: self.rho2 = kwargs['rho2']
 
         # calculating dynamic viscosity
-        if 'ν₁' in kwargs:
-            kwargs['μ₁'] = kwargs['ν₁'] * self.ρ1
+        if 'mu1' in kwargs:
+            kwargs['mu1'] = kwargs['nu1'] * self.rho1
         
-        if 'ν₂' in kwargs:
-            kwargs['μ₂'] = kwargs['ν₂'] * self.ρ2
+        if 'mu2' in kwargs:
+            kwargs['mu2'] = kwargs['nu2'] * self.rho2
         
         # store all the parameters
         for key in default_params:
@@ -169,7 +170,8 @@ class NS2Dsolver(object):
         calculate RHS of the pressure poisson equation 
         ∇⋅(1/ρ ∇Ξ) = -∇.u* /Δt
         """
-        u, w, p, d, mask = self.u, self.w, self.grid.d, self.mask
+        u, w, p = self.u, self.w, self.w 
+        d, mask = self.grid.d, self.mask
 
         net_outflow = (u[-1,1:-1]-u[0,1:-1]).sum() * d[1] + \
             (w[1:-1,-1]-w[1:-1,0]).sum() * d[0]
