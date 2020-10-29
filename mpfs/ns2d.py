@@ -41,10 +41,10 @@ class NS2Dsolver(object):
 
         self.mask = np.ones(self.p.shape, int)
 
-        # disclaimer: not doing anything
+        # disclaimer: not doing anything (for two-phase)
         self.chi = np.zeros(self.p.shape, dtype=np.float64 )  # vof value
 
-        # disclaimer: not doing anything
+        # disclaimer: not doing anything (will be implemented in future release)
         self.tracer = np.zeros(self.p.shape, dtype=np.float64 )
 
         self._bc = {self.LEFT:{}, self.RIGHT:{}, self.UP:{}, self.DOWN:{}}
@@ -356,7 +356,7 @@ class NS2Dsolver(object):
         ###
         ### all the terms in RHS of the momentum equation
         # pressure gradient
-        fc = Force(u, w, p)
+        fc = Force(self.grid, u, w, p)
         du1, dw1 = fc._cal_gradP_(rho, beta)
         # viscous force
         du2, dw2 = fc._cal_vis_force_(mu, rho)

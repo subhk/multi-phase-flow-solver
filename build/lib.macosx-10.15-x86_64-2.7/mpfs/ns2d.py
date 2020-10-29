@@ -356,7 +356,7 @@ class NS2Dsolver(object):
         ###
         ### all the terms in RHS of the momentum equation
         # pressure gradient
-        fc = Force(u, w, p)
+        fc = Force(self.grid, u, w, p)
         du1, dw1 = fc._cal_gradP_(rho, beta)
         # viscous force
         du2, dw2 = fc._cal_vis_force_(mu, rho)

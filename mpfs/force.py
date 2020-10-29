@@ -12,11 +12,12 @@ class Force(object):
     UP      = 'up'
     DOWN    = 'down'
 
-    def __init__(self, grid, u, w):
+    def __init__(self, grid, u, w, p):
         
         self.grid = grid
         self.u = u
         self.w = w
+        self.p = p
 
         self._bc = {self.LEFT:{}, self.RIGHT:{}, self.UP:{}, self.DOWN:{}}
     
@@ -92,10 +93,10 @@ class Force(object):
         dw = np.zeros( self.w.shape, np.float )
 
         d = self.grid.d
-        # ∂/∂x(p):
+        # -∂/∂x(p):
         du[:,1:-1] -= beta/d[0] * ( self.p[1:,1:-1] - self.p[:-1,1:-1]  ) / rho[:,1:-1]
 
-        # ∂/∂z(p):
+        # -∂/∂z(p):
         dw[1:-1,:] -= beta/d[1] * ( self.p[1:-1,1:] - self.p[1:-1,:-1] ) / rho[1:-1,:]
 
         return du, dw
