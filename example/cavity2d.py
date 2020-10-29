@@ -8,12 +8,14 @@ Domain: x ∈ [0,1] → x_min = 0; x_max= 1
      size ∈ [100, 100] → nx = 100; ny = 100  
 """
 
+import sys, getopt
+import numpy as np
+import time
+
 from mpfs.ns2d import NS2Dsolver 
 from mpfs.domain import Domain 
 from mpfs.bc import bc_ns2d 
 
-import numpy as np
-import time
 import logging
 logger = logging.getLogger(__name__)
 
