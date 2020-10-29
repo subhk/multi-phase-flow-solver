@@ -346,7 +346,7 @@ class NS2Dsolver(object):
             #print( 'no multi-phase simulation' )
 
         # let's keep it for multi-phase case:
-        # for χ=1, it would be for one-phase.
+        # for χ=0, it would be for one-phase.
         rho = self.rho1 * (1. - chi) + self.rho2 * chi
         mu  = self.mu1  * (1. - chi) + self.mu2  * chi
 
@@ -355,8 +355,8 @@ class NS2Dsolver(object):
         
         ###
         ### all the terms in RHS of the momentum equation
-        # pressure gradient
         fc = Force(self.grid, u, w, p)
+        # pressure gradient
         du1, dw1 = fc._cal_gradP_(rho, beta)
         # viscous force
         du2, dw2 = fc._cal_vis_force_(mu, rho)

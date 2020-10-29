@@ -94,10 +94,10 @@ class Force(object):
 
         d = self.grid.d
         # -∂/∂x(p):
-        du[:,1:-1] -= beta/d[0] * ( self.p[1:,1:-1] - self.p[:-1,1:-1]  ) / rho[:,1:-1]
+        du[:,1:-1] -= beta/d[0] * ( self.p[1:,1:-1] - self.p[:-1,1:-1] ) / ( 0.5 * (rho[1:,:] + rho[:-1,:]) )
 
         # -∂/∂z(p):
-        dw[1:-1,:] -= beta/d[1] * ( self.p[1:-1,1:] - self.p[1:-1,:-1] ) / rho[1:-1,:]
+        dw[1:-1,:] -= beta/d[1] * ( self.p[1:-1,1:] - self.p[1:-1,:-1] ) / ( 0.5 * (rho[:,1:] + rho[:,:-1]) )
 
         return du, dw
 

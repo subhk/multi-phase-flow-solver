@@ -60,7 +60,7 @@ class Domain(object):
         the y-coorindate of the node (8,9)
         """
 
-        s  = np.zeros( self.sze + 1, np.float )
+        gridP  = np.zeros( self.sze + 1, np.float )
         if i == 0:
             lamb = np.linspace( self.x_coord[0], self.x_coord[1], self.size+1 )
         elif i == 1:
@@ -70,8 +70,10 @@ class Domain(object):
 
         sl = ( slice(None), )
         n  = len(self.sze)-1-i 
-        for j in range(len(lamb)): s[sl*i+(j,)+sl*n] = lamb[j]
-        return s 
+        for j in range(len(lamb)): gridP[sl*i+(j,)+sl*n] = lamb[j]
+
+        return gridP
+
 
     shape = property( fget = _get_shape_ )
     d = property( fget = _get_node_spacing_ )

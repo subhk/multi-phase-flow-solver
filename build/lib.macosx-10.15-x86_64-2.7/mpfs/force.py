@@ -93,11 +93,11 @@ class Force(object):
         dw = np.zeros( self.w.shape, np.float )
 
         d = self.grid.d
-        # ∂/∂x(p):
-        du[:,1:-1] -= beta/d[0] * ( self.p[1:,1:-1] - self.p[:-1,1:-1]  ) / rho[:,1:-1]
+        # -∂/∂x(p):
+        du[:,1:-1] -= beta/d[0] * ( self.p[1:,1:-1] - self.p[:-1,1:-1] ) / ( 0.5 * (rho[1:,:] + rho[:-1,:]) )
 
-        # ∂/∂z(p):
-        dw[1:-1,:] -= beta/d[1] * ( self.p[1:-1,1:] - self.p[1:-1,:-1] ) / rho[1:-1,:]
+        # -∂/∂z(p):
+        dw[1:-1,:] -= beta/d[1] * ( self.p[1:-1,1:] - self.p[1:-1,:-1] ) / ( 0.5 * (rho[:,1:] + rho[:,:-1]) )
 
         return du, dw
 
