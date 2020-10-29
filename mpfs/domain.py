@@ -14,9 +14,9 @@ class Domain(object):
         """
         This creates a domain of uniform cartesian grids
 
-        x_coord ∈ [ x_min, x_max ]
-        z_coord ∈ [ z_min, z_max ]
-        Size = No of grid points in x and z-directions
+        x_coord ∈ [ x_min, x_max ],
+        z_coord ∈ [ z_min, z_max ],
+        Size = No of grid points in x and z-directions.
         """
 
         super(Domain, self).__init__()
@@ -44,7 +44,7 @@ class Domain(object):
         """
         return tuple(self.sze+1)
 
-    def _get_node_spacing_(self, i):
+    def _get_node_spacing_(self):
         """
         Return node spacing in the the x and y-directions
         """
@@ -75,7 +75,7 @@ class Domain(object):
 
     shape = property( fget = _get_shape_ )
     d = property( fget = _get_node_spacing_ )
-    x = property( fget = lambda self: self._get_coordinate_[0] )
-    z = property( fget = lambda self: self._get_coordinate_[1] )
+    x = property( fget = lambda self: self._get_coordinate_(0) )
+    z = property( fget = lambda self: self._get_coordinate_(1) )
 
  

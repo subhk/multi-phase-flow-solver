@@ -4,7 +4,7 @@ for NS2D solver
 """
 from functools import partial
 import numpy as np
-from ..poisson import *
+from mpfs.poisson import *
 
 from .force import Force
 import time
@@ -40,13 +40,13 @@ class NS2Dsolver(object):
 
         # all the prognostic variables.
         self.p = np.zeros( np.array(grid.shape)+1, dtype=np.float64  )
-        self.u = np.zeros( (self.p.shape[0]-1, np.p.shape[1]), dtype=np.float64 )
-        self.w = np.zeros( (self.p.shape[0], np.p.shape[1]-1), dtype=np.float64 )
+        self.u = np.zeros( (self.p.shape[0]-1, self.p.shape[1]), dtype=np.float64 )
+        self.w = np.zeros( (self.p.shape[0], self.p.shape[1]-1), dtype=np.float64 )
 
         self.mask = np.ones(self.p.shape, int)
 
         # disclaimer: not doing anything
-        self.chi = np.zeros(self.p.shape, dype=np.float64 )  # vof value
+        self.chi = np.zeros(self.p.shape, dtype=np.float64 )  # vof value
 
         # disclaimer: not doing anything
         self.tracer = np.zeros(self.p.shape, dtype=np.float64 )
@@ -55,11 +55,12 @@ class NS2Dsolver(object):
         self._bc_finalised = False
         self.poisson_data = poisson_data()
         
+        self._float_array = np.zeros(1, dtype=float)
         self.start_time = self.get_world_time()
 
         # Attributes:
-        self.sim_time = self.initial_sim_time = 0.
-        self.iteration = self.initial_iteration = 0
+        self.sim_time = 0.
+        self.iteration = 0
 
         # Default integration parameters:
         self.stop_sim_time = np.inf
@@ -113,9 +114,13 @@ class NS2Dsolver(object):
         else:
             return True
 
-    @property
-    def sim_time(self):
-        return self._sim_time.value
+    # @property
+    # def sim_time(self):
+    #     return self._sim_time.value
+
+    # @sim_time.setter
+    # def sim_time(self, t):
+    #     self._sim_time.value = t
 
     def get_world_time(self):
         self._float_array[0] = time.time()
@@ -295,13 +300,13 @@ class NS2Dsolver(object):
         """
 
         d = self.grid.d
-        u_ = abs(self.u) + 1.e-7 * (self.u == 0.0) # avoid division by zero
-        w_ = abs(self.v) + 1.e-7 * (self.w == 0.0)
+        u_ = abs(self.u) + 1.e-7 * (self.u == 0.0)  # avoid division by zero
+        w_ = abs(self.w) + 1.e-7 * (self.w == 0.0)  # avoid division by zero
 
         # may be multi-phase requires different criretia
         # // TODO: need to dig some literatures.
 
-        nu = self.mu / self.rho
+        nu = self.mu1 / self.rho1
 
         dt_cfl = min( d[0] / u_.max(), d[1] / w_.max() )
         dt_vis = 0.5 / (  nu * (d**-2).sum() )

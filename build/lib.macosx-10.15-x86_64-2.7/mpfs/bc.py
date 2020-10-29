@@ -36,7 +36,7 @@ class bc_ns2d(object):
 
         for boundary in bounadries.split('+'):
 
-            if boundary.self._bc:
+            if boundary in self._bc:
                 self._bc[boundary].update(kwargs)
 
             if 'p' in kwargs:
