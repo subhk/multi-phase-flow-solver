@@ -41,7 +41,7 @@ class NS2Dsolver(object):
 
         self.mask = np.ones(self.p.shape, int)
 
-        # disclaimer: not doing anything (for two-phase)
+        # disclaimer: not doing anything (will be implemented for two-phase in future release)
         self.chi = np.zeros(self.p.shape, dtype=np.float64 )  # vof value
 
         # disclaimer: not doing anything (will be implemented in future release)
