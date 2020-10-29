@@ -7,16 +7,16 @@ import numpy as np
 
 class Force(object):
 
+    LEFT    = 'left'
+    RIGHT   = 'right'
+    UP      = 'up'
+    DOWN    = 'down'
+
     def __init__(self, grid, u, w):
         
         self.grid = grid
         self.u = u
         self.w = w
-
-        LEFT    = 'left'
-        RIGHT   = 'right'
-        UP      = 'up'
-        DOWN    = 'down'
 
         self._bc = {self.LEFT:{}, self.RIGHT:{}, self.UP:{}, self.DOWN:{}}
     
