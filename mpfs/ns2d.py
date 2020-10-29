@@ -23,10 +23,6 @@ class NS2Dsolver(object):
     MASS_ADD = 'add'
     MASS_IGNORE = 'ignore'
 
-    CURV_CSF = 'csf'
-    CURV_DAC = 'dac'
-    CURV_MDAC = 'mdac'
-
     def __init__(self, grid, bc2d, **kwargs):
 
         # Initialise data structure:

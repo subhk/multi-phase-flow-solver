@@ -13,6 +13,11 @@ class Force(object):
         self.u = u
         self.w = w
 
+        LEFT    = 'left'
+        RIGHT   = 'right'
+        UP      = 'up'
+        DOWN    = 'down'
+
         self._bc = {self.LEFT:{}, self.RIGHT:{}, self.UP:{}, self.DOWN:{}}
     
 #    def _cal_νΔu_(self, μ, ρ):
