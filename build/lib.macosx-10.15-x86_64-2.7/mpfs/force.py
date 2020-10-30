@@ -34,52 +34,55 @@ class Force(object):
 
         d = self.grid.d
 
+        rho_u = 0.5 * (rho[1:,:] + rho[:-1,:])
+        rho_w = 0.5 * (rho[:,1:] + rho[:,:-1])
+
         # viscous terms in u-equation: (1/ρ)∂/∂x(2μ∂u/∂x) + (1/ρ)∂/∂y(μ(∂u/∂z+∂w/∂x))
         # (1/ρ)∂/∂x(2μ∂u/∂x):
         #  
         du[1:-1,1:-1] += ( mu[2:-1,1:-1] * (self.u[2:,1:-1] -self. u[1:-1,1:-1] ) - \
                     mu[1:-2,1:-1] * ( self.u[1:-1,1:-1] - self.u[:-2,1:-1]) ) / \
-                    ( 0.5 * (d[0]**2) * rho[1:-1,1:-1] )
+                    ( 0.5 * d[0]**2 * rho_u[1:-1,1:-1] )
 
         # ∂/∂y(μ(∂u/∂z+∂w/∂x)):
-        du[1:-1,1:-1] += ( mu_avg[:,1:] * ( (self.u[:,2:] - self.u[:,1:-1]) / (d[1]**2) + \
+        du[:,1:-1] += ( mu_avg[:,1:] * ( (self.u[:,2:] - self.u[:,1:-1]) / (d[1]**2) + \
                     (self.w[1:,1:] - self.w[:-1,1:]) / (d[0] * d[1]) ) - \
                     mu_avg[:,:-1] * ( (self.u[:,1:-1] - self.u[:,:-2]) / (d[1]**2) + \
                     (self.w[1:,:-1] - self.w[:-1,:-1]) / (d[0]*d[1]) ) ) / \
-                    rho[:,1:-1]
+                    rho_u[:,1:-1]
 
         # at the boundaries: (dirichlet condition )
         du[0,1:-1] -= ( mu[1,1:-1] * (self.w[1,1:] - self.w[1,:-1]) - \
                        mu[0,1:-1] * (self.w[0,1:] - self.w[0,:-1]) ) / \
-                      (0.5 * d[0] * d[1] * rho[0,1:-1])
+                      ( 0.5 * d[0] * d[1] * rho_u[0,1:-1] )
         du[-1,1:-1] -= ( mu[-1,1:-1] * (self.w[-1,1:] - self.w[-1,:-1]) - \
                         mu[-2,1:-1] * (self.w[-2,1:] - self.w[-2,:-1]) ) / \
-                       (0.5 * d[0] * d[1] * rho[-1,1:-1])
+                       ( 0.5 * d[0] * d[1] * rho_u[-1,1:-1] ) 
 
-        # // done: TODO need to evaulate the viscous terms it at the boundaries.
+        # // TODO need to evaulate the viscous terms it at the boundaries. (done)
         
         # viscous terms in w-equation: (1/ρ)∂/∂y(2μ∂w/∂z) + (1/ρ)∂/∂x(μ(∂u/∂z+∂w/∂x))
         # (1/ρ)∂/∂y(2μ∂w/∂z):
         #
         dw[1:-1,1:-1] += (mu[1:-1,2:-1] * (self.w[1:-1,2:] - self.w[1:-1,1:-1]) - \
                         mu[1:-1,1:-2] * (self.w[1:-1,1:-1] - self.w[1:-1,:-2])) / \
-                        (0.5 * (d[1]**2) * rho[1:-1,1:-1])
+                        ( 0.5 * d[1]**2 * rho_w[1:-1,1:-1] )
 
         # (1/ρ)∂/∂x(μ(∂u/∂z+∂w/∂x))
-        dw[1:-1,1:-1] += (mu_avg[1:,:] * ( (self.w[2:,:] - self.w[1:-1,:])/(d[0]**2) + \
+        dw[1:-1,:] += (mu_avg[1:,:] * ( (self.w[2:,:] - self.w[1:-1,:])/(d[0]**2) + \
                       (self.u[1:,1:] - self.u[1:,:-1]) / (d[0]*d[1]) ) - \
                       mu_avg[:-1,:] * ( (self.w[1:-1,:] - self.w[:-2,:]) / (d[0]**2) + \
                       (self.u[:-1,1:] - self.u[:-1,:-1])/(d[0]*d[1]) ) ) / \
-                      rho[1:-1,:]
+                      rho_w[1:-1,:]
 
-        # // done: TODO need to evaulate the viscous terms it at the boundaries.
+        # // TODO need to evaulate the viscous terms it at the boundaries. (done)
         # at the boundaries:
         dw[1:-1,0] -= ( mu[1:-1,1] * (self.u[1:,1] - self.u[:-1,1]) - \
                        mu[1:-1,0] * (self.u[1:,0] - self.u[:-1,0]) ) / \
-                      (0.5 * d[0] * d[1] * rho[1:-1,0])
+                      ( 0.5 * d[0] * d[1] * rho_w[1:-1,0] )
         dw[1:-1,-1] -= ( mu[1:-1,-1] * (self.u[1:,-1] - self.u[:-1,-1]) - \
                         mu[1:-1,-2] * (self.u[1:,-2] - self.u[:-1,-2]) ) / \
-                       (0.5 * d[0] * d[1] * rho[1:-1,-1])
+                       ( 0.5 * d[0] * d[1] * rho_w[1:-1,-1] )
 
         return du, dw
 
@@ -94,10 +97,10 @@ class Force(object):
 
         d = self.grid.d
         # -∂/∂x(p):
-        du[:,1:-1] -= beta/d[0] * ( self.p[1:,1:-1] - self.p[:-1,1:-1] ) / ( 0.5 * (rho[1:,:] + rho[:-1,:]) )
+        du[:,1:-1] -= beta/d[0] * ( self.p[1:,1:-1] - self.p[:-1,1:-1] ) / ( 0.5 * (rho[1:,1:-1] + rho[:-1,1:-1]) )
 
         # -∂/∂z(p):
-        dw[1:-1,:] -= beta/d[1] * ( self.p[1:-1,1:] - self.p[1:-1,:-1] ) / ( 0.5 * (rho[:,1:] + rho[:,:-1]) )
+        dw[1:-1,:] -= beta/d[1] * ( self.p[1:-1,1:] - self.p[1:-1,:-1] ) / ( 0.5 * (rho[1:-1,1:] + rho[1:-1,:-1]) )
 
         return du, dw
 

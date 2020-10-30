@@ -2,10 +2,6 @@
 example code: solves the square cavity problem
 with no-slip boundary condition except at the top
 boundary where only horizontal velocity is specified.
-Example:
-Domain: x ∈ [0,1] → x_min = 0; x_max= 1
-        z ∈ [0,1] → x_min = 0; x_max= 1
-     size ∈ [100, 100] → nx = 100; ny = 100  
 """
 
 import sys, getopt

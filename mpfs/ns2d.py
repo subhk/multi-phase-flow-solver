@@ -4,7 +4,7 @@ for NS2D solver
 """
 from functools import partial
 import numpy as np
-from .poisson import *
+from mpfs.poisson import *
 
 from .force import Force
 import time
@@ -67,7 +67,9 @@ class NS2Dsolver(object):
         default_params = {'rho1': 1000, 'rho2': 1000, 
                         'mu1': 1.0, 'mu2': 1.0,
                         'sigma': 0.0, 'gra': [0.0, 0.0],
-                        'multi_phase': False, 'use_passive_tracer': False }
+                        'multi_phase': False, 
+                        'mass_conservation' : self.MASS_ADD,
+                        'use_passive_tracer': False }
 
         for key in default_params:
             self.__dict__[key] = default_params[key]
@@ -125,7 +127,7 @@ class NS2Dsolver(object):
     def _set_ic_(self, **kwargs):
         """
         set initial condition for the simuation.
-        the arguments should be in terms of 'u', 'w', 'p', or 'χ',
+        the arguments should be in terms of 'u', 'w', 'p', or 'chi',
         it can be constant or function of (x, z)
         """
 
@@ -169,7 +171,7 @@ class NS2Dsolver(object):
     def _cal_RHS_poisson_eq_(self, dt):
         """
         calculate RHS of the pressure poisson equation 
-        ∇⋅(1/ρ ∇Ξ) = -∇.u* /Δt
+        nabla cdot (1/rho nabla xi) = -nabla  cdot u* /dt
         """
         u, w, p = self.u, self.w, self.w 
         d, mask = self.grid.d, self.mask
@@ -180,7 +182,7 @@ class NS2Dsolver(object):
         outflow_len =  0.
         outflow = 0.
 
-        dirichlet_used = ('p' in self.bc['self.UP']) or \
+        dirichlet_used = ('p' in self._bc['self.UP']) or \
             ('p' in self._bc['self.DOWN']) or \
             ('p' in self._bc['self.LEFT']) or \
             ('p' in self._bc['self.RIGHT'])
@@ -249,34 +251,34 @@ class NS2Dsolver(object):
         dw = np.zeros( self.w.shape, np.float )
 
         ###########
-        # u-equation::nonlinear terms → ∂/∂x(u²) + ∂/∂z(uw)
-        # ∂/∂x(u²):
+        # u-equation::nonlinear terms - d/dx(u*u) + d/dz(u*w)
+        # d/dx(u*u):
         du[1:-1,1:-1] -= 0.25 * ( (u[1:-1,1:-1]-u[2:,1:-1])**2 - \
                                 (u[1:-1,1:-1]-u[:-2,1:-1])**2 ) / d[0]
         
-        # at the bounadry: ∂/∂x(u²) = 2u∂/∂x(u) = -2u∂/∂z(w)
+        # at the bounadry: d/dx(u*u) = 2ud/dx(u) = -2ud/dz(w)
         du[0,1:-1]  += u[-1,1:-1] * ( (w[0,1:] + w[1,1:]) - \
                                 (w[0,:-1] + w[1,:-1]) ) / d[1]
         du[-1,1:-1] += u[-1,1:-1] * ( (w[-2,1:] + w[-1,1:]) - \
                                      (w[-2,:-1] + w[-1,:-1]) ) / d[1]
 
-        # ∂/∂y(uv):
+        # d/dy(u*w):
         du[:,1:-1] -= 0.25 * ( (u[:,1:-1] + u[:,2:]) * (w[:-1,1:] + w[1:,1:]) - \
             (u[:,1:-1] + u[:,:-2]) * (w[:-1,:-1] + w[1:,:-1]) ) / d[1]        
 
         ###########
-        # w-equation::nonlinear terms → ∂/∂z(w²) + ∂/∂x(uw)
-        # ∂/∂z(w²):
+        # w-equation::nonlinear terms - d/dz(w*w) + d/dx(u*w)
+        # d/dz(w*w):
         dw[1:-1,1:-1] -= 0.25 * ( (w[1:-1,1:-1] + w[1:-1,2:])**2 - \
                                  (w[1:-1,1:-1] + w[1:-1,:-2])**2 ) / d[1]
         
-        # at the bounadry: ∂/∂z(w²) = 2w∂/∂z(w) = -2w∂/∂x(u)
+        # at the bounadry: d/dz(w*w) = 2wd/dz(w) = -2wd/dx(u)
         dw[1:-1,0]  += w[1:-1,0] * ( (u[1:,0] + u[1:,1]) - \
                                    (u[:-1,0] + u[:-1,1]) ) / d[0]
         dw[1:-1,-1] += w[1:-1,-1] * ( (u[1:,-2] + u[1:,-1]) - \
                                      (u[:-1,-2] + u[:-1,-1]) ) / d[0]
 
-        # ∂/∂x(uw):
+        # d/dx(u*w):
         dw[1:-1,:] -= 0.25 * ( (w[1:-1,:] + w[2:,:]) * (u[1:,:-1] + u[1:,1:]) - \
             (w[1:-1,:] + w[:-2,:]) * (u[:-1,:-1] + u[:-1,1:]) ) / d[0] 
 
@@ -291,7 +293,7 @@ class NS2Dsolver(object):
         """
         Calculate a time stepping value that should give
         a stable (and correct!) simulation. It will get called every iteration.
-        PS: good idea to call it once 10 or likewise iterations → could be
+        PS: good idea to call it once 10 or likewise iterations - could be
         in more-effective: // TODO requires testing
         """
 
@@ -315,15 +317,15 @@ class NS2Dsolver(object):
     #
     def ns2d_simuation(self, dt, beta=1., gamma=0.):
         """
-        Simulation start
+        Simulation starts!
         Args:
             dt ([float]): [time step value of the simulation.]
 
-            β:  factor in the projection method
+            beta:  factor in the projection method
                 See "H. P. Langtangen, K.-A. Mardal and R. Winther:
                 Numerical Methods for Incompressible Viscous Flow"
             
-            γ:  Upwind differencing factor
+            gamma:  Upwind differencing factor
                 See "Numerical Simulation in Fluid Dynamics: A Practical 
                 Introduction" (1997) by Griebel, Dornsheifer and Neunhoeffer.
         """
@@ -346,7 +348,7 @@ class NS2Dsolver(object):
             #print( 'no multi-phase simulation' )
 
         # let's keep it for multi-phase case:
-        # for χ=0, it would be for one-phase.
+        # for chi=0, it would be for one-phase.
         rho = self.rho1 * (1. - chi) + self.rho2 * chi
         mu  = self.mu1  * (1. - chi) + self.mu2  * chi
 
@@ -377,18 +379,18 @@ class NS2Dsolver(object):
         self.iteration += 1
 
         # imposed bcs to intermediate velocity.
-        self.bc2d._update_intermediate_vel_bc_() 
+        self.bc2d._update_intermediate_vel_bc_(u, w, mask, self.sim_time) 
 
         # calculate RHS of PPE
         ppe = self._cal_RHS_poisson_eq_()
 
-        # Calculate boundary conditions for 'Ξ' and store the values in
+        # Calculate boundary conditions for '\xi' and store the values in
         # the ghost cells.   
         # 
         xi = np.zeros(p.shape, np.float64)
         self.bc2d._update_xi_bc(p, xi, beta)  
 
-        # Calculate pressure correction. (phi = p^{n+1} - β * p^(n))
+        # Calculate pressure correction. (phi = p^{n+1} - \beta * p^(n))
         # 'mask' defines where to use Dirichlet and Neumann boundary conditions.
         p *= beta               
         p += poisson(xi, ppe, d, mask, rho, self.poisson_data, 3) # LU decomposition

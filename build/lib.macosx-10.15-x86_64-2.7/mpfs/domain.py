@@ -14,8 +14,8 @@ class Domain(object):
         """
         This creates a domain of uniform cartesian grids
 
-        x_coord ∈ [ x_min, x_max ],
-        z_coord ∈ [ z_min, z_max ],
+        x_coord = [ x_min, x_max ],
+        z_coord = [ z_min, z_max ],
         Size = No of grid points in x and z-directions.
         """
 
@@ -54,7 +54,7 @@ class Domain(object):
 
     def _get_coordinate_(self, i):
         """
-        Return one of the coordinates for the grid. i ∈ [0,1]
+        Return one of the coordinates for the grid. i = [0,1]
         0 is for x-coordinate and 1 gives z-coordinate 
         For example _get_coordinate_(1)[8,9] will give
         the y-coorindate of the node (8,9)

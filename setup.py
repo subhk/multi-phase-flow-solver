@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from distutils.core import setup, Extension
-import numpy
+import numpy as np
 
 poisson_ext = Extension('poisson', 
     ['poisson/colamd.c',
@@ -48,7 +48,7 @@ poisson_ext = Extension('poisson',
     'poisson/superlu_timer.c',
     'poisson/util.c',
     'poisson/xerbla.c'], 
-	include_dirs=[numpy.get_include()], 
+	include_dirs=[np.get_include()], 
 	define_macros=[('NO_TIMER', None)])
 
 
@@ -56,8 +56,7 @@ setup(name='mpfs',
     version='1.0',
     author='Subhajit Kar',
     author_email='subhajitkar19@gmail.com',
-    description="A framework for solving 2D Navier-Stokes equation.",
-    url='https://github.com/subhk/multi-phase-flow-solver',
+    url='https://github.com/subhk/multi-phase-flow-solver/',
     py_modules=['mpfs.bc', 
 	 	'mpfs.domain', 
 	 	'mpfs.force',

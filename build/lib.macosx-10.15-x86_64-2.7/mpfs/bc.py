@@ -29,7 +29,7 @@ class bc_ns2d(object):
         The 'bounadries' should be 'east', 'west', 'north', 'south', 
         or a combination with '+' sign, for exmaple: 'east'+'west'+'south'
         with a common boundary conditions. 
-        The keywords should be 'u', 'w', 'p', 'χ', 
+        The keywords should be 'u', 'w', 'p', 'chi', 
         The condition should be either constant, or can be function of
         (x,y,t).
         """
