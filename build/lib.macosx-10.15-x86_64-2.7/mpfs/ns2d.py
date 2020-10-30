@@ -64,7 +64,7 @@ class NS2Dsolver(object):
         self.stop_iteration = np.inf
 
         #default paramters:
-        default_params = {'rho1': 1000, 'rho2': 1000, 
+        default_params = {'rho1': 1.0, 'rho2': 1.0, 
                         'mu1': 1.0, 'mu2': 1.0,
                         'sigma': 0.0, 'gra': [0.0, 0.0],
                         'multi_phase': False, 
@@ -85,10 +85,10 @@ class NS2Dsolver(object):
         if 'rho2' in kwargs: self.rho2 = kwargs['rho2']
 
         # calculating dynamic viscosity
-        if 'mu1' in kwargs:
+        if 'nu1' in kwargs:
             kwargs['mu1'] = kwargs['nu1'] * self.rho1
         
-        if 'mu2' in kwargs:
+        if 'nu2' in kwargs:
             kwargs['mu2'] = kwargs['nu2'] * self.rho2
         
         # store all the parameters
@@ -229,7 +229,6 @@ class NS2Dsolver(object):
         R = np.zeros( p.shape, np.float )
         R[1:-1,1:-1] = ( u[1:,1:-1] - u[:-1,1:-1] ) / d[0] + ( w[1:-1,1:] - w[1:-1,:-1] ) / d[1]
         
-
         # for mass conservation
         if not dirichlet_used and (outflow_len == 0.0 or \
             not self._mass_conservation in (self.MASS_ADD, self.MASS_SCALE)):
@@ -333,8 +332,8 @@ class NS2Dsolver(object):
         u, w, p = self.u, self.w, self.p
 
         # imposed boundary conditions:
-        self.bc2d._update_vel_bc_(u, w)
-        self.bc2d._update_pressure_bc_(p)
+        self.bc2d._update_vel_bc_(u, w, self.sim_time)
+        self.bc2d._update_pressure_bc_(p, self.sim_time)
 
         # if passive tracer used: will add later on.
         #if self.use_passive_tracer:
@@ -351,11 +350,11 @@ class NS2Dsolver(object):
         rho = self.rho1 * (1. - chi) + self.rho2 * chi
         mu  = self.mu1  * (1. - chi) + self.mu2  * chi
 
-        # RHS for the intermediate velocity equations.
-        du0, dw0  = self._cal_nonlinear_terms_(gamma)
-        
         ###
         ### all the terms in RHS of the momentum equation
+        # nonlinear advection terms
+        du0, dw0  = self._cal_nonlinear_terms_(gamma)
+        
         fc = Force(self.grid, u, w, p)
         # pressure gradient
         du1, dw1 = fc._cal_gradP_(rho, beta)
@@ -394,6 +393,9 @@ class NS2Dsolver(object):
         p *= beta               
         p += poisson(xi, ppe, d, mask, rho, self.poisson_data, 3) # LU decomposition
 
+        # Clear pressure inside obstacles.
+        p[1:-1,1:-1] *= (mask[1:-1,1:-1] & 1)
+        
         # Correct velocity on boundary for Dirichlet pressure boundary condition
         # do not worry it's taken care by mask function
         u[0,1:-1] -= dt * (xi[1,1:-1] - xi[0,1:-1]) / \
@@ -404,6 +406,7 @@ class NS2Dsolver(object):
 
         w[1:-1,0] -= dt * (xi[1:-1,1] - xi[1:-1,0]) / \
             (d[1] * rho[1:-1,0]) * (mask[1:-1,1] & 1)
+
         w[1:-1,-1] -= dt * (xi[1:-1,-1] - xi[1:-1,-2]) / \
             (d[1] * rho[1:-1,-1]) * (mask[1:-1,-2] & 1)
 

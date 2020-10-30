@@ -58,9 +58,7 @@ class bc_ns2d(object):
                     self._bc[boundary]['dpdn'] = 0.
 
 
-    def _update_vel_bc_(self, u, w):
-
-        #u, w = self.u, self.w
+    def _update_vel_bc_(self, u, w, time):
 
         # top-boundary condition
         _bc_ = self._bc[self.UP]
@@ -81,7 +79,7 @@ class bc_ns2d(object):
             if callable(fun_):
                 for i in range(u.shape[0]):
                     node = self.grid[i, u.shape[1]-2]
-                    u[i,-1] = 2. * fun_(node[0], node[1], self.time) - u[i,-2]
+                    u[i,-1] = 2. * fun_(node[0], node[1], time) - u[i,-2]
             else:
                 u[:,-1] = 2. * fun_ - u[:,-2]
 
@@ -101,7 +99,7 @@ class bc_ns2d(object):
             if callable(fun_):
                 for i in range(u.shape[0]):
                     node = self.grid[i, 0]
-                    u[i,0] = 2. * fun_(node[0], node[1], self.time) - u[i,1]
+                    u[i,0] = 2. * fun_(node[0], node[1], time) - u[i,1]
             else:
                 u[:,0] = 2. * fun_ - u[:,1]
 
@@ -121,7 +119,7 @@ class bc_ns2d(object):
             if callable(fun_):
                 for i in range(w.shape[1]):
                     node = self.grid[w.shape[0]-2, i]
-                    w[-1,i] = 2. * fun_(node[0], node[1], self.time) - w[-2,i]
+                    w[-1,i] = 2. * fun_(node[0], node[1], time) - w[-2,i]
             else:
                 w[-1,:] = 2. * fun_ - w[-2,:]
 
@@ -141,12 +139,12 @@ class bc_ns2d(object):
             if callable(fun_):
                 for i in range(v.shape[1]):
                     node = self.grid[0, i]
-                    w[0,i] = 2. * fun_(node[0], node[1], self.time) - w[1,i]
+                    w[0,i] = 2. * fun_(node[0], node[1], time) - w[1,i]
             else:
                 w[0,:] = 2. * fun_ - w[1,:]
 
 
-    def _update_pressure_bc_(self, p):
+    def _update_pressure_bc_(self, p, time):
         #p = self.p
 
         # top-boundary condition
@@ -160,7 +158,7 @@ class bc_ns2d(object):
             if callable(fun_):
                 for i in range(p.shape[0]):
                     node = self._grid[i-0.5, p.shape[1]-2]
-                    p[i,-1] = 2. * fun_(node[0], node[1], self.time) - p[i,-2]
+                    p[i,-1] = 2. * fun_(node[0], node[1], time) - p[i,-2]
             else:
                 p[:,-1] = 2. * fun_ - p[:,-2]
 
@@ -175,7 +173,7 @@ class bc_ns2d(object):
             if callable(fun_):
                 for i in range(p.shape[0]):
                     node = self.grid[i-0.5, 0]
-                    p[i,0] = 2. * fun_(node[0], node[1], self.time) - p[i,1]
+                    p[i,0] = 2. * fun_(node[0], node[1], time) - p[i,1]
             else:
                 p[:,0] = 2. * fun_ - p[:,1]
 
@@ -190,7 +188,7 @@ class bc_ns2d(object):
             if callable(fun_):
                 for i in range(p.shape[1]):
                     node = self.grid[p.shape[0]-2, i-0.5]
-                    p[-1,i] = 2. * fun_(node[0], node[1], self.time) - p[-2,i]
+                    p[-1,i] = 2. * fun_(node[0], node[1], time) - p[-2,i]
             else:
                 p[-1,:] = 2. * fun_ - p[-2,:]
 
@@ -205,14 +203,12 @@ class bc_ns2d(object):
             if callable(fun_):
                 for i in range(p.shape[1]):
                     node = self.grid[0, i-0.5]
-                    p[0,i] = 2 * fun_(node[0], node[1], self.time) - p[1,i]
+                    p[0,i] = 2 * fun_(node[0], node[1], time) - p[1,i]
             else:
                 p[0,:] = 2. * fun_ - p[1,:]
 
 
-    def _update_xi_bc_(self, p, xi, beta ):
-
-        #p = self.p
+    def _update_xi_bc_(self, p, xi, beta, time ):
         
         # top-boundary condition
         _bc_ = self._bc[self.UP]
@@ -221,7 +217,7 @@ class bc_ns2d(object):
             if callable(fun_):
                 for i in range(p.shape[0]):
                     node = self.grid[i-0.5, p.shape[1]-2]
-                    xi[i,-1] = 2. * fun_(node[0], node[1], self.time) - beta * (p[i,-2] + p[i,-1])
+                    xi[i,-1] = 2. * fun_(node[0], node[1], time) - beta * (p[i,-2] + p[i,-1])
             else:
                 xi[:,-1] = 2 * fun_ - beta * (p[:,-2] + p[:,-1])
         
@@ -232,7 +228,7 @@ class bc_ns2d(object):
             if callable(fun_):
                 for i in range(p.shape[0]):
                     node = self.grid[i-0.5, 0]
-                    xi[i,0] = 2. * fun_(node[0], node[1], self.time) - beta * (p[i,1] + p[i,0])
+                    xi[i,0] = 2. * fun_(node[0], node[1], time) - beta * (p[i,1] + p[i,0])
             else:
                 xi[:,0] = 2. * fun_ - beta * (p[:,1] + p[:,0])        
 
@@ -243,7 +239,7 @@ class bc_ns2d(object):
             if callable(fun_):
                 for i in range(p.shape[1]):
                     node = self.grid[p.shape[0]-2, i-0.5]
-                    xi[-1,i] = 2. * fun_(node[0], node[1], self.time) - beta * (p[-2,i] + p[-1,i])
+                    xi[-1,i] = 2. * fun_(node[0], node[1], time) - beta * (p[-2,i] + p[-1,i])
             else:
                 xi[-1,:] = 2 * fun_ - beta * (p[-2,:] + p[-1,:])        
 
@@ -254,7 +250,7 @@ class bc_ns2d(object):
             if callable(fun_):
                 for i in range(p.shape[1]):
                     node = self.grid[0, i-0.5]
-                    xi[0,i] = 2. * fun_(node[0], node[1], self.time) - beta * (p[1,i] + p[0,i])
+                    xi[0,i] = 2. * fun_(node[0], node[1], time) - beta * (p[1,i] + p[0,i])
             else:
                 xi[0,:] = 2 * fun_ - beta * (p[1,:] + p[0,:])        
 
@@ -281,7 +277,7 @@ class bc_ns2d(object):
 
         # zero velocity inside and on the boundary of obstacles
         w[:,:] *= ( mask[:,:-1] & mask[:,1:] & 1 )
-        # negate velocities inside obstacles
+        # nullify velocities inside obstacles
         w[1:-2,:] -= ( 1 - w_mask[1:-2,:] ) * w[2:-1,:]
         w[2:-1,:] -= ( 1 - w_mask[2:-1,:] ) * w[1:-2,:] 
 

@@ -4,7 +4,6 @@ with no-slip boundary condition except at the top
 boundary where only horizontal velocity is specified.
 """
 
-import sys, getopt
 import numpy as np
 import time
 
@@ -13,21 +12,21 @@ from mpfs.bc import bc_ns2d
 from mpfs.ns2d import NS2Dsolver 
 
 import logging
-#logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
-grid = Domain( [0, 1], [0, 1], [100, 100] )
+grid = Domain( [0, 1], [0, 1], [200, 200] )
 
 print('grid generation is done!')
 
 # setting up the boundary condition
 bc_2d = bc_ns2d(grid)
-bc_2d._set_bc_( 'left+right', u=0, v=0 )
-bc_2d._set_bc_( 'down', u=0, v=0 )
-bc_2d._set_bc_( 'up', u=0.1, v=0 )
+bc_2d._set_bc_( 'left+right', u=0., v=0. )
+bc_2d._set_bc_( 'down', u=0., v=0. )
+bc_2d._set_bc_( 'up', u=-1., v=0. )
 
 # setting up the NS2D-solver
-solver = NS2Dsolver( grid, bc_2d, nu=1.e-4 )
+solver = NS2Dsolver( grid, bc_2d, mu=1./1e3, rho=1. )
 print('solver is done!')
 
 # Integration parameters
@@ -36,30 +35,33 @@ solver.stop_wall_time = np.inf
 solver.stop_iteration = np.inf
 
 print('I am getting inside the loop!')
+log.info("Starting loop")
 
 # Main-loop:
 try:
-    logging.info('Starting loop')
+    log.info('Starting loop')
     start_run_time = time.time()
 
     while solver.ok:
 
-        print('I am here!')
+        #print('I am here!')
 
         dt = solver.compute_cfl_dt_()
+        #print('dt = ', dt)
         solver.ns2d_simuation( dt )
 
         if (solver.iteration-1) % 10 == 0:
-            logging.info('Iteration: %i, Time: %e, dt: %e' %(solver.iteration, solver.sim_time, dt))
+            print('solver.iteration: %i, Time: %e, dt: %e', (solver.iteration, solver.sim_time, dt))
+            print('max-w: %e', np.min(np.sqrt(solver.u*solver.u)) )
 
 except:
-    logging.error('Exception raised, triggering end of main loop.')
+    log.error('Exception raised, triggering end of main loop.')
     raise
 finally:
     end_run_time = time.time()
-    logging.info('Iterations: %i' %solver.iteration)
-    logging.info('Sim end time: %f' %solver.sim_time)
-    logging.info('Run time: %.2f sec' %(end_run_time - start_run_time))
+    print('Iterations: %i' %solver.iteration)
+    print('Sim end time: %f' %solver.sim_time)
+    print('Run time: %.2f sec' %(end_run_time - start_run_time))
 
 
 
