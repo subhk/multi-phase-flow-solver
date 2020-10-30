@@ -173,7 +173,7 @@ class NS2Dsolver(object):
         calculate RHS of the pressure poisson equation 
         nabla cdot (1/rho nabla xi) = -nabla  cdot u* /dt
         """
-        u, w, p = self.u, self.w, self.w 
+        u, w, p = self.u, self.w, self.p
         d, mask = self.grid.d, self.mask
 
         net_outflow = (u[-1,1:-1]-u[0,1:-1]).sum() * d[1] + \
@@ -182,10 +182,10 @@ class NS2Dsolver(object):
         outflow_len =  0.
         outflow = 0.
 
-        dirichlet_used = ('p' in self._bc['self.UP']) or \
-            ('p' in self._bc['self.DOWN']) or \
-            ('p' in self._bc['self.LEFT']) or \
-            ('p' in self._bc['self.RIGHT'])
+        dirichlet_used = ('p' in self._bc[self.UP]) or \
+            ('p' in self._bc[self.DOWN]) or \
+            ('p' in self._bc[self.LEFT]) or \
+            ('p' in self._bc[self.RIGHT])
 
         if 'dwdn' in self._bc[self.UP]:
             outflow_len += mask[1:-1,-2].sum() * d[0] 
@@ -225,10 +225,9 @@ class NS2Dsolver(object):
                 if 'dudn' in self._bc[self.RIGHT]:  u[-1,1:-1] *= flow_correction
 
 
-        # calculate RHS of the PPE here:
+        # calculate RHS of the PPE :
         R = np.zeros( p.shape, np.float )
-        R[1:-1,1:-1] = ( u[1:,1:-1] - u[:-1,1:-1] ) / d[0] + \
-            ( w[1:-1,1:] - w[1:-1,:-1] ) / d[1]
+        R[1:-1,1:-1] = ( u[1:,1:-1] - u[:-1,1:-1] ) / d[0] + ( w[1:-1,1:] - w[1:-1,:-1] ) / d[1]
         
 
         # for mass conservation
@@ -388,7 +387,7 @@ class NS2Dsolver(object):
         # the ghost cells.   
         # 
         xi = np.zeros(p.shape, np.float64)
-        self.bc2d._update_xi_bc(p, xi, beta)  
+        self.bc2d._update_xi_bc_(p, xi, beta)  
 
         # Calculate pressure correction. (phi = p^{n+1} - \beta * p^(n))
         # 'mask' defines where to use Dirichlet and Neumann boundary conditions.

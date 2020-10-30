@@ -67,7 +67,9 @@ class NS2Dsolver(object):
         default_params = {'rho1': 1000, 'rho2': 1000, 
                         'mu1': 1.0, 'mu2': 1.0,
                         'sigma': 0.0, 'gra': [0.0, 0.0],
-                        'multi_phase': False, 'use_passive_tracer': False }
+                        'multi_phase': False, 
+                        'mass_conservation' : self.MASS_ADD,
+                        'use_passive_tracer': False }
 
         for key in default_params:
             self.__dict__[key] = default_params[key]
@@ -171,7 +173,7 @@ class NS2Dsolver(object):
         calculate RHS of the pressure poisson equation 
         nabla cdot (1/rho nabla xi) = -nabla  cdot u* /dt
         """
-        u, w, p = self.u, self.w, self.w 
+        u, w, p = self.u, self.w, self.p
         d, mask = self.grid.d, self.mask
 
         net_outflow = (u[-1,1:-1]-u[0,1:-1]).sum() * d[1] + \
@@ -180,10 +182,10 @@ class NS2Dsolver(object):
         outflow_len =  0.
         outflow = 0.
 
-        dirichlet_used = ('p' in self.bc['self.UP']) or \
-            ('p' in self._bc['self.DOWN']) or \
-            ('p' in self._bc['self.LEFT']) or \
-            ('p' in self._bc['self.RIGHT'])
+        dirichlet_used = ('p' in self._bc[self.UP]) or \
+            ('p' in self._bc[self.DOWN]) or \
+            ('p' in self._bc[self.LEFT]) or \
+            ('p' in self._bc[self.RIGHT])
 
         if 'dwdn' in self._bc[self.UP]:
             outflow_len += mask[1:-1,-2].sum() * d[0] 
@@ -223,10 +225,9 @@ class NS2Dsolver(object):
                 if 'dudn' in self._bc[self.RIGHT]:  u[-1,1:-1] *= flow_correction
 
 
-        # calculate RHS of the PPE here:
+        # calculate RHS of the PPE :
         R = np.zeros( p.shape, np.float )
-        R[1:-1,1:-1] = ( u[1:,1:-1] - u[:-1,1:-1] ) / d[0] + \
-            ( w[1:-1,1:] - w[1:-1,:-1] ) / d[1]
+        R[1:-1,1:-1] = ( u[1:,1:-1] - u[:-1,1:-1] ) / d[0] + ( w[1:-1,1:] - w[1:-1,:-1] ) / d[1]
         
 
         # for mass conservation
@@ -380,13 +381,13 @@ class NS2Dsolver(object):
         self.bc2d._update_intermediate_vel_bc_(u, w, mask, self.sim_time) 
 
         # calculate RHS of PPE
-        ppe = self._cal_RHS_poisson_eq_()
+        ppe = self._cal_RHS_poisson_eq_(dt)
 
         # Calculate boundary conditions for '\xi' and store the values in
         # the ghost cells.   
         # 
         xi = np.zeros(p.shape, np.float64)
-        self.bc2d._update_xi_bc(p, xi, beta)  
+        self.bc2d._update_xi_bc_(p, xi, beta)  
 
         # Calculate pressure correction. (phi = p^{n+1} - \beta * p^(n))
         # 'mask' defines where to use Dirichlet and Neumann boundary conditions.
