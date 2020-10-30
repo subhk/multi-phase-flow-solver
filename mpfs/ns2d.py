@@ -382,7 +382,7 @@ class NS2Dsolver(object):
         self.bc2d._update_intermediate_vel_bc_(u, w, mask, self.sim_time) 
 
         # calculate RHS of PPE
-        ppe = self._cal_RHS_poisson_eq_()
+        ppe = self._cal_RHS_poisson_eq_(dt)
 
         # Calculate boundary conditions for '\xi' and store the values in
         # the ghost cells.   
