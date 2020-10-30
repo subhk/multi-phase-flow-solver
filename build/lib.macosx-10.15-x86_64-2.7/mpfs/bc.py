@@ -259,7 +259,6 @@ class bc_ns2d(object):
         """
         update bcs for intermediate velocities.
         """
-        #u, w = self.u, self.w
 
         # Interior boundaries
         # Apply no-slip boundary conditions to obstacles.

@@ -23,41 +23,6 @@ class bc_ns2d(object):
         self._bc = {self.LEFT:{}, self.RIGHT:{}, self.UP:{}, self.DOWN:{}}
         
 
-    def _set_bc_(self, bounadries, **kwargs):
-        """
-        Set bonadry conditions for the computational domain.
-        The 'bounadries' should be 'east', 'west', 'north', 'south', 
-        or a combination with '+' sign, for exmaple: 'east'+'west'+'south'
-        with a common boundary conditions. 
-        The keywords should be 'u', 'w', 'p', 'chi', 
-        The condition should be either constant, or can be function of
-        (x,y,t).
-        """
-
-        for boundary in bounadries.split('+'):
-
-            if boundary in self._bc:
-                self._bc[boundary].update(kwargs)
-
-            if 'p' in kwargs:
-                if boundary == self.UP:
-                    self.mask[:,-1] = 3
-                elif boundary == self.DOWN:
-                    self.mask[:,0]= 3
-                elif boundary == self.LEFT:
-                    self.mask[0,:] = 3
-                elif boundary == self.RIGHT:
-                    self.mask[-1,:] = 3
-
-            if 'w' in kwargs:
-                if boundary in (self.UP, self.DOWN):
-                    self._bc[boundary]['dpdn'] = 0.
-
-            if 'u' in kwargs:
-                if boundary in (self.LEFT, self.RIGHT):
-                    self._bc[boundary]['dpdn'] = 0.
-
-
     def _update_vel_bc_(self, u, w, time):
 
         # top-boundary condition
@@ -137,7 +102,7 @@ class bc_ns2d(object):
         elif 'w' in _bc_:
             fun_ = _bc_['w']
             if callable(fun_):
-                for i in range(v.shape[1]):
+                for i in range(w.shape[1]):
                     node = self.grid[0, i]
                     w[0,i] = 2. * fun_(node[0], node[1], time) - w[1,i]
             else:
@@ -157,7 +122,7 @@ class bc_ns2d(object):
             fun_ = _bc_['p']
             if callable(fun_):
                 for i in range(p.shape[0]):
-                    node = self._grid[i-0.5, p.shape[1]-2]
+                    node = self.grid[i-0.5, p.shape[1]-2]
                     p[i,-1] = 2. * fun_(node[0], node[1], time) - p[i,-2]
             else:
                 p[:,-1] = 2. * fun_ - p[:,-2]

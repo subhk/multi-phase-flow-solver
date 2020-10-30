@@ -21,12 +21,13 @@ print('grid generation is done!')
 
 # setting up the boundary condition
 bc_2d = bc_ns2d(grid)
-bc_2d._set_bc_( 'left+right', u=0., v=0. )
-bc_2d._set_bc_( 'down', u=0., v=0. )
-bc_2d._set_bc_( 'up', u=-1., v=0. )
 
 # setting up the NS2D-solver
 solver = NS2Dsolver( grid, bc_2d, mu=1./1e3, rho=1. )
+solver._set_bc_( 'left+right', u=0., v=0. )
+solver._set_bc_( 'down', u=0., v=0. )
+solver._set_bc_( 'up', u=-1., v=0. )
+
 print('solver is done!')
 
 # Integration parameters

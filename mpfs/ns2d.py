@@ -158,6 +158,39 @@ class NS2Dsolver(object):
                 _set_ic_[:,:] = fun_ # 'fun_' is a constant.
 
 
+    def _set_bc_(self, bounadries, **kwargs):
+        """
+        Set bonadry conditions for the computational domain.
+        The 'bounadries' should be 'east', 'west', 'north', 'south', 
+        or a combination with '+' sign, for exmaple: 'east'+'west'+'south'
+        with a common boundary conditions. 
+        The keywords should be 'u', 'w', 'p', 'chi', 
+        The condition should be either constant, or can be function of
+        (x,y,t).
+        """
+
+        for boundary in bounadries.split('+'):
+
+            if boundary in self._bc:
+                self._bc[boundary].update(kwargs)
+
+            if 'p' in kwargs:
+                if boundary == self.UP:
+                    self.mask[:,-1] = 3
+                elif boundary == self.DOWN:
+                    self.mask[:,0]= 3
+                elif boundary == self.LEFT:
+                    self.mask[0,:] = 3
+                elif boundary == self.RIGHT:
+                    self.mask[-1,:] = 3
+
+            if 'w' in kwargs:
+                if boundary in (self.UP, self.DOWN):
+                    self._bc[boundary]['dpdn'] = 0.
+
+            if 'u' in kwargs:
+                if boundary in (self.LEFT, self.RIGHT):
+                    self._bc[boundary]['dpdn'] = 0.
 
     # def _remove_singularity(self):
     #     """
@@ -218,6 +251,7 @@ class NS2Dsolver(object):
             
             else:
                 flow_correction = 1. - net_outflow / outflow
+
                 if 'dwdn' in self._bc[self.UP]:     w[1:-1,-1] *= flow_correction
                 if 'dwdn' in self._bc[self.DOWN]:   w[1:-1,0]  *= flow_correction
 
@@ -331,6 +365,9 @@ class NS2Dsolver(object):
         d, mask, chi = self.grid.d, self.mask, self.chi
         u, w, p = self.u, self.w, self.p
 
+        # print('d[0] = ', d[0])
+        # print('d[1] = ', d[1])
+
         # imposed boundary conditions:
         self.bc2d._update_vel_bc_(u, w, self.sim_time)
         self.bc2d._update_pressure_bc_(p, self.sim_time)
@@ -345,7 +382,7 @@ class NS2Dsolver(object):
             # add multiphase code here
             #print( 'no multi-phase simulation' )
 
-        # let's keep it for multi-phase case:
+        # ok, let's keep it for multi-phase case:
         # for chi=0, it would be for one-phase.
         rho = self.rho1 * (1. - chi) + self.rho2 * chi
         mu  = self.mu1  * (1. - chi) + self.mu2  * chi

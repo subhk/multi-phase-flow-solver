@@ -218,6 +218,7 @@ class NS2Dsolver(object):
             
             else:
                 flow_correction = 1. - net_outflow / outflow
+
                 if 'dwdn' in self._bc[self.UP]:     w[1:-1,-1] *= flow_correction
                 if 'dwdn' in self._bc[self.DOWN]:   w[1:-1,0]  *= flow_correction
 
@@ -330,6 +331,9 @@ class NS2Dsolver(object):
 
         d, mask, chi = self.grid.d, self.mask, self.chi
         u, w, p = self.u, self.w, self.p
+
+        print('d[0] = ', d[0])
+        print('d[1] = ', d[1])
 
         # imposed boundary conditions:
         self.bc2d._update_vel_bc_(u, w, self.sim_time)
