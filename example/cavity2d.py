@@ -52,7 +52,8 @@ try:
 
         if (solver.iteration-1) % 10 == 0:
             print('solver.iteration: %i, Time: %e, dt: %e', (solver.iteration, solver.sim_time, dt))
-            print('max-w: %e', np.min(np.sqrt(solver.u*solver.u)) )
+            mid = solver.u.shape[1]/2
+            print "Centre velocities (u):", solver.u[-1,mid-2:mid+3]
 
 except:
     log.error('Exception raised, triggering end of main loop.')

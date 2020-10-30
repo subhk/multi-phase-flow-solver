@@ -386,16 +386,16 @@ class NS2Dsolver(object):
         # the ghost cells.   
         # 
         xi = np.zeros(p.shape, np.float64)
-        self.bc2d._update_xi_bc_(p, xi, beta)  
+        self.bc2d._update_xi_bc_(p, xi, beta, self.sim_time)  
 
-        # Calculate pressure correction. (phi = p^{n+1} - \beta * p^(n))
+        # Calculate pressure correction. (xi = p^{n+1} - \beta * p^(n))
         # 'mask' defines where to use Dirichlet and Neumann boundary conditions.
         p *= beta               
         p += poisson(xi, ppe, d, mask, rho, self.poisson_data, 3) # LU decomposition
 
         # Clear pressure inside obstacles.
         p[1:-1,1:-1] *= (mask[1:-1,1:-1] & 1)
-        
+
         # Correct velocity on boundary for Dirichlet pressure boundary condition
         # do not worry it's taken care by mask function
         u[0,1:-1] -= dt * (xi[1,1:-1] - xi[0,1:-1]) / \
@@ -409,6 +409,8 @@ class NS2Dsolver(object):
 
         w[1:-1,-1] -= dt * (xi[1:-1,-1] - xi[1:-1,-2]) / \
             (d[1] * rho[1:-1,-1]) * (mask[1:-1,-2] & 1)
+
+        #print( 'u-max = ', np.max(np.sqrt(u*u)) )
 
 
 
