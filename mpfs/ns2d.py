@@ -369,8 +369,8 @@ class NS2Dsolver(object):
         # print('d[1] = ', d[1])
 
         # imposed boundary conditions:
-        self.bc2d._update_vel_bc_(u, w, self.sim_time)
-        self.bc2d._update_pressure_bc_(p, self.sim_time)
+        self.bc2d._update_vel_bc_(u, w, self.sim_time, self._bc)
+        self.bc2d._update_pressure_bc_(p, self.sim_time, self._bc)
 
         # if passive tracer used: will add later on.
         #if self.use_passive_tracer:
@@ -408,13 +408,16 @@ class NS2Dsolver(object):
         du += dt * self.gra[0]
         dw += dt * self.gra[1]
 
+        u += du
+        w += dw
+
         # update time
         self.sim_time += dt
         # update iteration
         self.iteration += 1
 
         # imposed bcs to intermediate velocity.
-        self.bc2d._update_intermediate_vel_bc_(u, w, mask, self.sim_time) 
+        self.bc2d._update_intermediate_vel_bc_(u, w, mask, self.sim_time, self._bc) 
 
         # calculate RHS of PPE
         ppe = self._cal_RHS_poisson_eq_(dt)
@@ -423,7 +426,7 @@ class NS2Dsolver(object):
         # the ghost cells.   
         # 
         xi = np.zeros(p.shape, np.float64)
-        self.bc2d._update_xi_bc_(p, xi, beta, self.sim_time)  
+        self.bc2d._update_xi_bc_(p, xi, beta, self.sim_time, self._bc)  
 
         # Calculate pressure correction. (xi = p^{n+1} - \beta * p^(n))
         # 'mask' defines where to use Dirichlet and Neumann boundary conditions.
@@ -433,19 +436,28 @@ class NS2Dsolver(object):
         # Clear pressure inside obstacles.
         p[1:-1,1:-1] *= (mask[1:-1,1:-1] & 1)
 
+        rho_u = 0.5 * ( rho[1:,:] + rho[:-1,:] )
+        rho_w = 0.5 * ( rho[:,1:] + rho[:,:-1] )
+
+        # Correct velocity. Zero velcity change on obstacle walls.
+        u[1:-1,1:-1] -= dt * (xi[2:-1,1:-1] - xi[1:-2,1:-1]) / \
+            ( d[0] * rho_u[1:-1,1:-1] ) * (mask[2:-1,1:-1] & mask[1:-2,1:-1] & 1)
+        w[1:-1,1:-1] -= dt * (xi[1:-1,2:-1] - xi[1:-1,1:-2]) / \
+            ( d[1] * rho_w[1:-1,1:-1] ) * (mask[1:-1,2:-1] & mask[1:-1,1:-2] & 1)
+
         # Correct velocity on boundary for Dirichlet pressure boundary condition
         # do not worry it's taken care by mask function
         u[0,1:-1] -= dt * (xi[1,1:-1] - xi[0,1:-1]) / \
-            (d[0] * rho[0,1:-1]) * (mask[1,1:-1] & 1)
+            (d[0] * rho_u[0,1:-1]) * (mask[1,1:-1] & 1)
 
         u[-1,1:-1] -= dt * (xi[-1,1:-1] - xi[-2,1:-1]) / \
-            (d[0] * rho[-1,1:-1]) * (mask[-2,1:-1] & 1)
+            (d[0] * rho_u[-1,1:-1]) * (mask[-2,1:-1] & 1)
 
         w[1:-1,0] -= dt * (xi[1:-1,1] - xi[1:-1,0]) / \
-            (d[1] * rho[1:-1,0]) * (mask[1:-1,1] & 1)
+            (d[1] * rho_w[1:-1,0]) * (mask[1:-1,1] & 1)
 
         w[1:-1,-1] -= dt * (xi[1:-1,-1] - xi[1:-1,-2]) / \
-            (d[1] * rho[1:-1,-1]) * (mask[1:-1,-2] & 1)
+            (d[1] * rho_w[1:-1,-1]) * (mask[1:-1,-2] & 1)
 
         #print( 'u-max = ', np.max(np.sqrt(u*u)) )
 

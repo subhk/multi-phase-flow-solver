@@ -20,48 +20,13 @@ class bc_ns2d(object):
         # self.w = w
         # self.p = p
 
-        self._bc = {self.LEFT:{}, self.RIGHT:{}, self.UP:{}, self.DOWN:{}}
+        #self._bc = {self.LEFT:{}, self.RIGHT:{}, self.UP:{}, self.DOWN:{}}
         
 
-    def _set_bc_(self, bounadries, **kwargs):
-        """
-        Set bonadry conditions for the computational domain.
-        The 'bounadries' should be 'east', 'west', 'north', 'south', 
-        or a combination with '+' sign, for exmaple: 'east'+'west'+'south'
-        with a common boundary conditions. 
-        The keywords should be 'u', 'w', 'p', 'chi', 
-        The condition should be either constant, or can be function of
-        (x,y,t).
-        """
-
-        for boundary in bounadries.split('+'):
-
-            if boundary in self._bc:
-                self._bc[boundary].update(kwargs)
-
-            if 'p' in kwargs:
-                if boundary == self.UP:
-                    self.mask[:,-1] = 3
-                elif boundary == self.DOWN:
-                    self.mask[:,0]= 3
-                elif boundary == self.LEFT:
-                    self.mask[0,:] = 3
-                elif boundary == self.RIGHT:
-                    self.mask[-1,:] = 3
-
-            if 'w' in kwargs:
-                if boundary in (self.UP, self.DOWN):
-                    self._bc[boundary]['dpdn'] = 0.
-
-            if 'u' in kwargs:
-                if boundary in (self.LEFT, self.RIGHT):
-                    self._bc[boundary]['dpdn'] = 0.
-
-
-    def _update_vel_bc_(self, u, w, time):
+    def _update_vel_bc_(self, u, w, time, _bc):
 
         # top-boundary condition
-        _bc_ = self._bc[self.UP]
+        _bc_ = _bc[self.UP]
         if 'dwdn' in _bc_:
             if _bc_['dwdn'] != 0:
                 raise ValueError('dw/dn must be zero.')
@@ -84,7 +49,7 @@ class bc_ns2d(object):
                 u[:,-1] = 2. * fun_ - u[:,-2]
 
         # bottom-boundary condition
-        _bc_ = self._bc[self.DOWN]
+        _bc_ = _bc[self.DOWN]
         if 'dwdn' in _bc_:
             if _bc_['dwdn'] != 0:
                 raise ValueError('dw/dn must be zero.') 
@@ -104,7 +69,7 @@ class bc_ns2d(object):
                 u[:,0] = 2. * fun_ - u[:,1]
 
         # left-boundary condition
-        _bc_ = self._bc[self.LEFT]
+        _bc_ = _bc[self.LEFT]
         if 'dudn' in _bc_:
             if _bc_['dudn'] != 0:
                 raise ValueError('du/dn must be zero.') 
@@ -124,7 +89,7 @@ class bc_ns2d(object):
                 w[-1,:] = 2. * fun_ - w[-2,:]
 
         # right-boundary condition
-        _bc_ = self._bc[self.RIGHT]
+        _bc_ = _bc[self.RIGHT]
         if 'dudn' in _bc_:
             if _bc_['dudn'] != 0:
                 raise ValueError('du/dn must be zero.') 
@@ -137,18 +102,18 @@ class bc_ns2d(object):
         elif 'w' in _bc_:
             fun_ = _bc_['w']
             if callable(fun_):
-                for i in range(v.shape[1]):
+                for i in range(w.shape[1]):
                     node = self.grid[0, i]
                     w[0,i] = 2. * fun_(node[0], node[1], time) - w[1,i]
             else:
                 w[0,:] = 2. * fun_ - w[1,:]
 
 
-    def _update_pressure_bc_(self, p, time):
+    def _update_pressure_bc_(self, p, time, _bc):
         #p = self.p
 
         # top-boundary condition
-        _bc_ = self._bc[self.UP]
+        _bc_ = _bc[self.UP]
         if 'dpdn' in _bc_:
             if _bc_['dpdn'] != 0:
                 raise ValueError('dp/dn must be zero.') 
@@ -157,13 +122,13 @@ class bc_ns2d(object):
             fun_ = _bc_['p']
             if callable(fun_):
                 for i in range(p.shape[0]):
-                    node = self._grid[i-0.5, p.shape[1]-2]
+                    node = self.grid[i-0.5, p.shape[1]-2]
                     p[i,-1] = 2. * fun_(node[0], node[1], time) - p[i,-2]
             else:
                 p[:,-1] = 2. * fun_ - p[:,-2]
 
         # bottom-boundary condition
-        _bc_ = self._bc[self.DOWN]
+        _bc_ = _bc[self.DOWN]
         if 'dpdn' in _bc_:
             if _bc_['dpdn'] != 0:
                 raise ValueError('dp/dn must be zero.') 
@@ -178,7 +143,7 @@ class bc_ns2d(object):
                 p[:,0] = 2. * fun_ - p[:,1]
 
         # left-boundary condition
-        _bc_ = self._bc[self.LEFT]
+        _bc_ = _bc[self.LEFT]
         if 'dpdn' in _bc_:
             if _bc_['dpdn'] != 0:
                 raise ValueError('dp/dn must be zero.') 
@@ -193,7 +158,7 @@ class bc_ns2d(object):
                 p[-1,:] = 2. * fun_ - p[-2,:]
 
         # right-boundary condition
-        _bc_ = self._bc[self.RIGHT]
+        _bc_ = _bc[self.RIGHT]
         if 'dpdn' in _bc_:
             if _bc_['dpdn'] != 0:
                 raise ValueError('dp/dn must be zero.') 
@@ -208,10 +173,10 @@ class bc_ns2d(object):
                 p[0,:] = 2. * fun_ - p[1,:]
 
 
-    def _update_xi_bc_(self, p, xi, beta, time ):
+    def _update_xi_bc_(self, p, xi, beta, time, _bc ):
         
         # top-boundary condition
-        _bc_ = self._bc[self.UP]
+        _bc_ = _bc[self.UP]
         if 'p' in _bc_:
             fun_ = _bc_['p']
             if callable(fun_):
@@ -222,7 +187,7 @@ class bc_ns2d(object):
                 xi[:,-1] = 2 * fun_ - beta * (p[:,-2] + p[:,-1])
         
         # bottom-boundary condition
-        _bc_ = self._bc[self.DOWN]
+        _bc_ = _bc[self.DOWN]
         if 'p' in _bc_:
             fun_ = _bc_['p']
             if callable(fun_):
@@ -233,7 +198,7 @@ class bc_ns2d(object):
                 xi[:,0] = 2. * fun_ - beta * (p[:,1] + p[:,0])        
 
         # left-boundary condition
-        _bc_ = self._bc[self.LEFT]
+        _bc_ = _bc[self.LEFT]
         if 'p' in _bc_:
             fun_ = _bc_['p']
             if callable(fun_):
@@ -244,7 +209,7 @@ class bc_ns2d(object):
                 xi[-1,:] = 2 * fun_ - beta * (p[-2,:] + p[-1,:])        
 
         # right-boundary condition
-        _bc_ = self._bc[self.RIGHT]
+        _bc_ = _bc[self.RIGHT]
         if 'p' in _bc_:
             fun_ = _bc_['p']
             if callable(fun_):
@@ -255,7 +220,7 @@ class bc_ns2d(object):
                 xi[0,:] = 2 * fun_ - beta * (p[1,:] + p[0,:])        
 
 
-    def _update_intermediate_vel_bc_(self, u, w, mask, time):
+    def _update_intermediate_vel_bc_(self, u, w, mask, time, _bc):
         """
         update bcs for intermediate velocities.
         """
@@ -281,7 +246,7 @@ class bc_ns2d(object):
         w[2:-1,:] -= ( 1 - w_mask[2:-1,:] ) * w[1:-2,:] 
 
         # top boundary
-        _bc_ = self._bc[self.UP]
+        _bc_ = _bc[self.UP]
         if 'w' in _bc_:
             fun_ = _bc_['v']
             if callable(fun_):
@@ -292,7 +257,7 @@ class bc_ns2d(object):
                 w[:,-1] = fun_     
 
         # bottom boundary
-        _bc_ = self._bc[self.DOWN]
+        _bc_ = _bc[self.DOWN]
         if 'w' in _bc_:
             fun_ = _bc_['w']
             if callable(fun_):
@@ -303,7 +268,7 @@ class bc_ns2d(object):
                 w[:,0] = fun_ 
 
         # left boundary
-        _bc_ = self._bc[self.LEFT]
+        _bc_ = _bc[self.LEFT]
         if 'u' in _bc_:
             fun_ = _bc_['u']
             if callable(fun_):
@@ -314,7 +279,7 @@ class bc_ns2d(object):
                 u[-1,:] = fun_
 
         # west boundary
-        _bc_ = self._bc[self.RIGHT]
+        _bc_ = _bc[self.RIGHT]
         if 'u' in _bc_:
             fun_ = _bc_['u']
             if callable(fun_):
