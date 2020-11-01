@@ -10,6 +10,7 @@ import time
 from mpfs.domain import Domain 
 from mpfs.bc import bc_ns2d 
 from mpfs.ns2d import NS2Dsolver 
+from mpfs.writer import write
 
 import logging
 log = logging.getLogger(__name__)

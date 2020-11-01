@@ -1,38 +1,36 @@
-from logging import FileHandler, Handler
 import os
 import h5py
 import numpy as np
+import re
+import shutil
+import uuid
+
+import logging
+logger = logging.getLogger(__name__.split('.')[-1])
 
 
-class Writer(object):
+class write(object):
 
-    def  __init__(self, ):
+    def  __init__(self, u, w, p, time, save_rate):
+        
+        self.u = u
+        self.w = w
+        self.p = p
+        self.time = time
+        save_rate
+
+    def _store_var_(self):
+
+        u_ = [[self.u]]
+        
+
+    def _write_var_(self):
+
+        u_ = []
+        w_ = []
 
 
 
-    def 
 
 
-
-
-class FileHandler(Handler):
-
-    """
-    Handler that writes tasks to an HDF5 file.
-    Parameters
-    ----------
-    base_path : str
-        Base path for analyis output folder
-    max_writes : int, optional
-        Maximum number of writes per set (default: infinite)
-    max_size : int, optional
-        Maximum file size to write to, in bytes (default: 2**30 = 1 GB).
-        (Note: files may be larger after final write.)
-    mode : str, optional
-        'overwrite' to delete any present analysis output with the same base path.
-        'append' to begin with set number incremented past any present analysis output.
-        Default behavior set by config option.
-    """
-
-    
 
