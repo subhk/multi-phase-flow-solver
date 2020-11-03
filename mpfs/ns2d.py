@@ -10,7 +10,8 @@ from .force import Force
 import time
 
 import logging
-logger = logging.getLogger(__name__.split('.')[-1])
+logging.basicConfig(level=logging.INFO)
+#logger = logging.getLogger(__name__.split('.')[-1])
 
 class NS2Dsolver(object):
 
@@ -101,13 +102,13 @@ class NS2Dsolver(object):
     def ok(self):
         """Check that current time and iteration pass stop conditions."""
         if self.sim_time >= self.stop_sim_time:
-            logger.info('Simulation stop time reached.')
+            logging.info('Simulation stop time reached.')
             return False
         elif (self.get_world_time() - self.start_time) >= self.stop_wall_time:
-            logger.info('Wall stop time reached.')
+            logging.info('Wall stop time reached.')
             return False
         elif self.iteration >= self.stop_iteration:
-            logger.info('Stop iteration reached.')
+            logging.info('Stop iteration reached.')
             return False
         else:
             return True
