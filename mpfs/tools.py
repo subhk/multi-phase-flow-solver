@@ -36,9 +36,9 @@ class tools(object):
         return _lerp(left, right, frac[0])
 
     
-    def _interpolate_v(self, pos):
+    def _interpolate_w(self, pos):
         """
-        Return the v-velocity at the given position in the domain by using
+        Return the w-velocity at the given position in the domain by using
         bilinear interpolation.
         """
         min_coord = np.array( [ self.grid.x.min(), self.grid.z.min() ]  )
@@ -49,19 +49,19 @@ class tools(object):
         low = np.array(pos, int)
 
         if low[0] < 0: low[0] = 0
-        if low[0] > self.v.shape[0]-2: low[0] = self.v.shape[0]-2
+        if low[0] > self.w.shape[0]-2: low[0] = self.w.shape[0]-2
         if low[1] < 0: low[1] = 0
-        if low[1] > self.v.shape[1]-2: low[1] = self.v.shape[1]-2
+        if low[1] > self.w.shape[1]-2: low[1] = self.w.shape[1]-2
         frac = pos - low
 
-        left  = _lerp( self.solver.v[low[0],   low[1]], self.solver.v[low[0],   low[1]+1], frac[1] )
-        right = _lerp( self.solver.v[low[0]+1, low[1]], self.solver.v[low[0]+1, low[1]+1], frac[1] )
+        left  = _lerp( self.solver.w[low[0],   low[1]], self.solver.w[low[0],   low[1]+1], frac[1] )
+        right = _lerp( self.solver.w[low[0]+1, low[1]], self.solver.w[low[0]+1, low[1]+1], frac[1] )
 
         return _lerp(left, right, frac[0])
 
     
     def _interpolate_velocity(self, pos):
-        return np.array( [self._interpolate_u(pos), self._interpolate_v(pos)] )
+        return np.array( [self._interpolate_u(pos), self._interpolate_w(pos)] )
 
     
     def avg_velocity(self, middle=True):
@@ -70,23 +70,62 @@ class tools(object):
         interpolation if 'middle' is true. If 'middle' is false, the
         average velocity is calculated on grid cell corners.
         """
+        u = self.solver.u
+        w = self.solver.w
+
         if middle:
-            u_avg = 0.5 * ( self.solver.u[:-1,1:-1] + self.solver.u[1:,1:-1] )
-            v_avg = 0.5 * ( self.solver.v[1:-1,:-1] + self.solver.v[1:-1,1:] )
+            u_avg = 0.5 * ( u[:-1,1:-1] + u[1:,1:-1] )
+            w_avg = 0.5 * ( w[1:-1,:-1] + w[1:-1,1:] )
         else:
-            u_avg = 0.5 * ( self.solver.u[:,1:] + self.solver.u[:,:-1] )
-            v_avg = 0.5 * ( self.solver.v[1:,:] + self.solver.v[:-1,:] )
+            u_avg = 0.5 * ( u[:,1:] + u[:,:-1] )
+            w_avg = 0.5 * ( w[1:,:] + w[:-1,:] )
 
-        return (u_avg, v_avg)
+        return (u_avg, w_avg)
 
 
-    def divergence(self):
+    def _cal_divergence(self):
         """
         Return the divergence field. The nodes coincide with pressure nodes.
         """
         d = self.grid.d
         div = np.zeros(self.p.shape, float)
         u = self.solver.u
-        v = self.solver.v
-        div[1:-1,1:-1] = (u[1:,1:-1]-u[:-1,1:-1])/delta[0] + (v[1:-1,1:]-v[1:-1,:-1])/delta[1]
-        return f
+        w = self.solver.w
+
+        div[1:-1,1:-1] = (u[1:,1:-1]-u[:-1,1:-1])/d[0] + (w[1:-1,1:]-w[1:-1,:-1])/d[1]
+
+        return div
+
+    
+    def _cal_vorticity(self):
+        """
+        Return the vorticity or curl field. The nodes are located
+        at the grid cell corners.
+        """
+        d = self.grid.d
+        u = self.solver.u
+        w = self.solver.w
+        
+        vor = (w[1:,:]-w[:-1,:])/d[0] - (u[:,1:]-u[:,:-1])/d[1]
+        
+        return vor
+
+    
+    def _cal_streamfunction(self):
+        """
+        Return the stream function field. The nodes are located
+        at the grid cell corners.
+        """
+        u = self.solver.u
+        w = self.solver.w
+        psi = np.zeros(self.grid.shape, float)
+        
+        mask = (self.solver.mask[:-1,1:-1] | self.solver.mask[1:,1:-1]) & 1
+
+        psi[1:,0] = -(w[1:-1,0] * self.grid.d[0]).cumsum(0)
+        psi[:,1:] = mask * u[:,1:-1] * self.grid.d[1]
+        psi = psi.cumsum(1)
+        
+        return psi
+
+    
