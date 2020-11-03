@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__.split('.')[-1])
 FILEHANDLER_MODE_DEFAULT = 'overwrite'
 FILEHANDLER_TOUCH_TMPFILE = False
 
+
 class Evaluator:
 
     def __init__(self, domain, vars):
@@ -70,29 +71,72 @@ class Evaluator:
 
 
     def evaluate_handlers(self, handlers, id=None, **kwargs):
-            """Evaluate a collection of handlers."""
+        """Evaluate a collection of handlers."""
 
-            # Default to uuid to cache within evaluation, but not across evaluations
-            if id is None:
-                id = uuid.uuid4()
+        # Default to uuid to cache within evaluation, but not across evaluations
+        if id is None:
+            id = uuid.uuid4()
 
-            tasks = [t for h in handlers for t in h.tasks]
-            for task in tasks:
-                task['out'] = None
+        tasks = [t for h in handlers for t in h.tasks]
+        for task in tasks:
+            task['out'] = None
 
-            # Attempt initial evaluation
-            tasks = self.attempt_tasks(tasks, id=id)
+        # Attempt initial evaluation
+        tasks = self.attempt_tasks(tasks, id=id)
 
-            # Move all fields to coefficient layout
+        # Move all fields to coefficient layout
+        fields = self.get_fields(tasks)
+        self.require_coeff_space(fields)
+        tasks = self.attempt_tasks(tasks, id=id)
+
+        # Oscillate through layouts until all tasks are evaluated
+        n_layouts = len(self.domain.dist.layouts)
+        oscillate_indices = oscillate(range(n_layouts))
+        current_index = next(oscillate_indices)
+
+        while tasks:
+            next_index = next(oscillate_indices)
+            # Transform fields
             fields = self.get_fields(tasks)
-            self.require_coeff_space(fields)
+            if current_index < next_index:
+                self.domain.dist.paths[current_index].increment(fields)
+            else:
+                self.domain.dist.paths[next_index].decrement(fields)
+            current_index = next_index
+            # Attempt evaluation
             tasks = self.attempt_tasks(tasks, id=id)
 
-            # Oscillate through layouts until all tasks are evaluated
-            n_layouts = len(self.domain.dist.layouts)
-            oscillate_indices = oscillate(range(n_layouts))
-            current_index = next(oscillate_indices)
+        # Transform all outputs to coefficient layout to dealias
+        outputs = OrderedSet([t['out'] for h in handlers for t in h.tasks])
+        self.require_coeff_space(outputs)
 
+
+        # Copy redundant outputs so processing is independent
+        outputs = set()
+        for handler in handlers:
+            for task in handler.tasks:
+                if task['out'] in outputs:
+                    task['out'] = task['out'].copy()
+                else:
+                    outputs.add(task['out'])
+
+        # Process
+        for handler in handlers:
+            handler.process(**kwargs)
+
+
+    def require_coeff_space(self, fields):
+        """Move all fields to coefficient layout."""
+        # Build dictionary of starting layout indices
+        layouts = defaultdict(list, {0:[]})
+        for f in fields:
+            layouts[f.layout.index].append(f)
+        # Decrement all fields down to layout 0
+        max_index = max(layouts.keys())
+        current_fields = []
+        for index in range(max_index, 0, -1):
+            current_fields.extend(layouts[index])
+            self.domain.dist.paths[index-1].decrement(current_fields)
 
 
     @staticmethod
@@ -114,6 +158,8 @@ class Evaluator:
             else:
                 task['out'] = output
         return unfinished
+
+
 
 class Handler:
 
