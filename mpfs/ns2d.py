@@ -2,7 +2,7 @@
 This file contains the main program file
 for NS2D solver
 """
-from functools import partial
+#from functools import partial
 import numpy as np
 from mpfs.matsolver import *
 
