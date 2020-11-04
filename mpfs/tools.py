@@ -10,8 +10,9 @@ class tools(object):
 
         self.solver = solver
         self.grid = grid
+        self.u = solver.u
+        self.w = solver.w
     
-
     def _interpolate_u(self, pos):
         """
         Return the u-velocity at the given position in the domain by using
@@ -25,13 +26,13 @@ class tools(object):
         low = np.array( pos, int )
 
         if low[0] < 0: low[0] = 0
-        if low[0] > self.solver.u.shape[0]-2: low[0] = self.solver.u.shape[0]-2
+        if low[0] > self.u.shape[0]-2: low[0] = self.u.shape[0]-2
         if low[1] < 0: low[1] = 0
-        if low[1] > self.solver.u.shape[1]-2: low[1] = self.solver.u.shape[1]-2
+        if low[1] > self.u.shape[1]-2: low[1] = self.u.shape[1]-2
         frac = pos - low
 
-        left  = _lerp( self.solver.u[low[0],   low[1]], self.solver.u[low[0],   low[1]+1], frac[1] )
-        right = _lerp( self.solver.u[low[0]+1, low[1]], self.solver.u[low[0]+1, low[1]+1], frac[1] )
+        left  = _lerp( self.u[low[0],   low[1]], self.u[low[0],   low[1]+1], frac[1] )
+        right = _lerp( self.u[low[0]+1, low[1]], self.u[low[0]+1, low[1]+1], frac[1] )
 
         return _lerp(left, right, frac[0])
 
@@ -54,8 +55,8 @@ class tools(object):
         if low[1] > self.w.shape[1]-2: low[1] = self.w.shape[1]-2
         frac = pos - low
 
-        left  = _lerp( self.solver.w[low[0],   low[1]], self.solver.w[low[0],   low[1]+1], frac[1] )
-        right = _lerp( self.solver.w[low[0]+1, low[1]], self.solver.w[low[0]+1, low[1]+1], frac[1] )
+        left  = _lerp( self.w[low[0],   low[1]], self.w[low[0],   low[1]+1], frac[1] )
+        right = _lerp( self.w[low[0]+1, low[1]], self.w[low[0]+1, low[1]+1], frac[1] )
 
         return _lerp(left, right, frac[0])
 
@@ -70,15 +71,13 @@ class tools(object):
         interpolation if 'middle' is true. If 'middle' is false, the
         average velocity is calculated on grid cell corners.
         """
-        u = self.solver.u
-        w = self.solver.w
 
         if middle:
-            u_avg = 0.5 * ( u[:-1,1:-1] + u[1:,1:-1] )
-            w_avg = 0.5 * ( w[1:-1,:-1] + w[1:-1,1:] )
+            u_avg = 0.5 * ( self.u[:-1,1:-1] + self.u[1:,1:-1] )
+            w_avg = 0.5 * ( self.w[1:-1,:-1] + self.w[1:-1,1:] )
         else:
-            u_avg = 0.5 * ( u[:,1:] + u[:,:-1] )
-            w_avg = 0.5 * ( w[1:,:] + w[:-1,:] )
+            u_avg = 0.5 * ( self.u[:,1:] + self.u[:,:-1] )
+            w_avg = 0.5 * ( self.w[1:,:] + self.w[:-1,:] )
 
         return (u_avg, w_avg)
 
@@ -89,10 +88,9 @@ class tools(object):
         """
         d = self.grid.d
         div = np.zeros(self.p.shape, float)
-        u = self.solver.u
-        w = self.solver.w
 
-        div[1:-1,1:-1] = (u[1:,1:-1]-u[:-1,1:-1])/d[0] + (w[1:-1,1:]-w[1:-1,:-1])/d[1]
+        div[1:-1,1:-1] = (self.u[1:,1:-1] - self.u[:-1,1:-1])/d[0] \
+                        + (self.w[1:-1,1:] - self.w[1:-1,:-1])/d[1]
 
         return div
 
@@ -103,10 +101,9 @@ class tools(object):
         at the grid cell corners.
         """
         d = self.grid.d
-        u = self.solver.u
-        w = self.solver.w
         
-        vor = (w[1:,:]-w[:-1,:])/d[0] - (u[:,1:]-u[:,:-1])/d[1]
+        vor = (self.w[1:,:] - self.w[:-1,:])/d[0] \
+                - (self.u[:,1:] - self.u[:,:-1])/d[1]
         
         return vor
 
@@ -116,8 +113,6 @@ class tools(object):
         Return the stream function field. The nodes are located
         at the grid cell corners.
         """
-        u = self.solver.u
-        w = self.solver.w
         psi = np.zeros(self.grid.shape, float)
         
         mask = (self.solver.mask[:-1,1:-1] | self.solver.mask[1:,1:-1]) & 1
