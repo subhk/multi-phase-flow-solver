@@ -4,7 +4,7 @@ import numpy as np
 def _lerp(a, b, s):
     return a * (1 - s) + b * s
 
-class tools(object):
+class utility(object):
 
     def __init__(self, solver, grid):
 
