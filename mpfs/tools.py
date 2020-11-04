@@ -117,8 +117,8 @@ class tools(object):
         
         mask = (self.solver.mask[:-1,1:-1] | self.solver.mask[1:,1:-1]) & 1
 
-        psi[1:,0] = -(w[1:-1,0] * self.grid.d[0]).cumsum(0)
-        psi[:,1:] = mask * u[:,1:-1] * self.grid.d[1]
+        psi[1:,0] = -(self.w[1:-1,0] * self.grid.d[0]).cumsum(0)
+        psi[:,1:] = mask * self.u[:,1:-1] * self.grid.d[1]
         psi = psi.cumsum(1)
         
         return psi
