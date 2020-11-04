@@ -15,7 +15,6 @@ from mpfs.writer import Writer
 import logging
 log = logging.getLogger(__name__)
 
-
 grid = Domain( [0, 1], [0, 1], [500, 500] )
 
 # object to handle boundary condition for velocity, pressure,... etc
@@ -32,20 +31,22 @@ solver.stop_sim_time = 10.
 solver.stop_wall_time = np.inf
 solver.stop_iteration = np.inf
 
+#snap = Writer(solver, grid)
 
 # Main-loop:
 try:
     print('Starting loop')
     start_run_time = time.time()
-
-    snap = Writer(solver, grid)
+    print('I am at 1!')
 
     while solver.ok:
 
+        print('I am at 2!')
         dt = solver.compute_cfl_dt_()
         solver.ns2d_simuation( dt )
 
-        snap.file_handler( 'snapshots', iter=20 )
+        print('I am at 3!')
+        #snap.file_handler( 'snapshots', 20 )
 
         if (solver.iteration-1) % 10 == 0:
             print('solver.iteration: %i, Time: %e, dt: %e' %(solver.iteration, solver.sim_time, dt))

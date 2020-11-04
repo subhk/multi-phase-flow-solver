@@ -6,7 +6,7 @@ This file contains the information about the
 import numpy as np
 import os
 
-from numpy.core.fromnumeric import shape
+#from numpy.core.fromnumeric import shape
 
 class Domain(object):
 

@@ -10,8 +10,8 @@ class utility(object):
 
         self.solver = solver
         self.grid = grid
-        self.u = solver.u
-        self.w = solver.w
+        self.u = self.solver.u
+        self.w = self.solver.w
     
     def _interpolate_u(self, pos):
         """

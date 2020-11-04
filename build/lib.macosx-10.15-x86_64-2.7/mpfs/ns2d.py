@@ -4,7 +4,7 @@ for NS2D solver
 """
 #from functools import partial
 import numpy as np
-from mpfs.matsolver import *
+from mpfs.poisson import *
 
 from .force import Force
 import time
