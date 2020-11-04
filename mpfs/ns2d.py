@@ -462,6 +462,8 @@ class NS2Dsolver(object):
 
         #print( 'u-max = ', np.max(np.sqrt(u*u)) )
 
+        
+
 
 
     

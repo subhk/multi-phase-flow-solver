@@ -10,7 +10,7 @@ import time
 from mpfs.domain import Domain 
 from mpfs.bc import bc_ns2d 
 from mpfs.ns2d import NS2Dsolver 
-from mpfs.writer import write
+from mpfs.writer import Writer 
 
 import logging
 log = logging.getLogger(__name__)
@@ -38,10 +38,14 @@ try:
     print('Starting loop')
     start_run_time = time.time()
 
+    snap = Writer(solver, grid)
+
     while solver.ok:
 
         dt = solver.compute_cfl_dt_()
         solver.ns2d_simuation( dt )
+
+        snap.file_handler( 'snapshots', iter=20 )
 
         if (solver.iteration-1) % 10 == 0:
             print('solver.iteration: %i, Time: %e, dt: %e' %(solver.iteration, solver.sim_time, dt))

@@ -2,15 +2,16 @@
 This file contains the main program file
 for NS2D solver
 """
-from functools import partial
+#from functools import partial
 import numpy as np
-from mpfs.poisson import *
+from mpfs.matsolver import *
 
 from .force import Force
 import time
 
 import logging
-logger = logging.getLogger(__name__.split('.')[-1])
+logging.basicConfig(level=logging.INFO)
+#logger = logging.getLogger(__name__.split('.')[-1])
 
 class NS2Dsolver(object):
 
@@ -101,13 +102,13 @@ class NS2Dsolver(object):
     def ok(self):
         """Check that current time and iteration pass stop conditions."""
         if self.sim_time >= self.stop_sim_time:
-            logger.info('Simulation stop time reached.')
+            logging.info('Simulation stop time reached.')
             return False
         elif (self.get_world_time() - self.start_time) >= self.stop_wall_time:
-            logger.info('Wall stop time reached.')
+            logging.info('Wall stop time reached.')
             return False
         elif self.iteration >= self.stop_iteration:
-            logger.info('Stop iteration reached.')
+            logging.info('Stop iteration reached.')
             return False
         else:
             return True
@@ -436,8 +437,8 @@ class NS2Dsolver(object):
         # Clear pressure inside obstacles.
         p[1:-1,1:-1] *= (mask[1:-1,1:-1] & 1)
 
-        rho_u = 0.5 * (rho[1:,:] + rho[:-1,:])
-        rho_w = 0.5 * (rho[:,1:] + rho[:,:-1])
+        rho_u = 0.5 * ( rho[1:,:] + rho[:-1,:] )
+        rho_w = 0.5 * ( rho[:,1:] + rho[:,:-1] )
 
         # Correct velocity. Zero velcity change on obstacle walls.
         u[1:-1,1:-1] -= dt * (xi[2:-1,1:-1] - xi[1:-2,1:-1]) / \
@@ -460,6 +461,8 @@ class NS2Dsolver(object):
             (d[1] * rho_w[1:-1,-1]) * (mask[1:-1,-2] & 1)
 
         #print( 'u-max = ', np.max(np.sqrt(u*u)) )
+
+        
 
 
 
