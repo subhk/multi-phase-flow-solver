@@ -1,7 +1,9 @@
 """
-example code: solves the square cavity problem
+Example code: 
+Solves the square cavity problem
 with no-slip boundary condition except at the top
 boundary where only horizontal velocity is specified.
+@Subhajit Kar 
 """
 
 import numpy as np
@@ -79,7 +81,6 @@ except:
     log.error('Exception raised, triggering end of main loop.')
     raise
 finally:
-    print('Cnt = ', cnt)
     end_run_time = time.time()
     print('Iterations: %i' %solver.iteration)
     print('Sim end time: %f' %solver.sim_time)
