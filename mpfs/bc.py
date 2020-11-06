@@ -16,14 +16,11 @@ class bc_ns2d(object):
     def __init__(self, grid):
 
         self.grid = grid
-        # self.u = u
-        # self.w = w
-        # self.p = p
 
-        #self._bc = {self.LEFT:{}, self.RIGHT:{}, self.UP:{}, self.DOWN:{}}
-        
 
-    def _update_vel_bc_(self, u, w, time, _bc):
+    def _update_vel_bc_(self, u, w, mask, time, _bc):
+
+        self._update_intermediate_vel_bc_(u, w, mask, time, _bc)
 
         # top-boundary condition
         _bc_ = _bc[self.UP]
@@ -248,7 +245,7 @@ class bc_ns2d(object):
         # top boundary
         _bc_ = _bc[self.UP]
         if 'w' in _bc_:
-            fun_ = _bc_['v']
+            fun_ = _bc_['w']
             if callable(fun_):
                 for i in range(w.shape[0]):
                     node = self.grid[i-0.5, w.shape[1]-1]

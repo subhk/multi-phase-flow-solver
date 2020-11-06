@@ -62,9 +62,9 @@ class Domain(object):
 
         gridP  = np.zeros( self.sze + 1, np.float )
         if i == 0:
-            lamb = np.linspace( self.x_coord[0], self.x_coord[1], self.size+1 )
+            lamb = np.linspace( self.x_coord[0], self.x_coord[1], self.sze[0]+1 )
         elif i == 1:
-            lamb = np.linspace( self.z_coord[0], self.z_coord[1], self.size+1 ) 
+            lamb = np.linspace( self.z_coord[0], self.z_coord[1], self.sze[1]+1 ) 
         else:
             raise ValueError('i must 0 or 1')
 

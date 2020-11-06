@@ -1,13 +1,13 @@
 #include <Python.h>
 #include <numpy/arrayobject.h>
-#include <cmath>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 //#define DEBUG
 //#undef NDEBUG
-#include <cassert>
+#include <assert.h>
 
 #include "sparse.h"
 
@@ -730,7 +730,7 @@ static PyMethodDef module_methods[] = {
 	{NULL, NULL}
 };
 
-static char module_doc[] = "module poisson:\n"
+static char module_doc[] = "module matsolver:\n"
 	"  phi = poisson(phi, f, delta, mask, rho[, data, reuse])\n"
 	"  mask = remove_singularity(mask)\n"
 	"  data = poisson_data()\n";

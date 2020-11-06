@@ -2,9 +2,9 @@
 #define SPARSE_H
 
 #include <iostream>
-#include <cassert>
-#include <cmath>
-#include <cstdlib>
+#include <assert.h>
+#include <math.h>
+#include <stdlib.h>
 
 // This class should only be used for simple types: 
 // float, double, int, bool, char etc.

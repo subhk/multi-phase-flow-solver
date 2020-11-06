@@ -102,13 +102,13 @@ class NS2Dsolver(object):
     def ok(self):
         """Check that current time and iteration pass stop conditions."""
         if self.sim_time >= self.stop_sim_time:
-            logging.info('Simulation stop time reached.')
+            print('Simulation stop time reached.')
             return False
         elif (self.get_world_time() - self.start_time) >= self.stop_wall_time:
-            logging.info('Wall stop time reached.')
+            print('Wall stop time reached.')
             return False
         elif self.iteration >= self.stop_iteration:
-            logging.info('Stop iteration reached.')
+            print('Stop iteration reached.')
             return False
         else:
             return True
@@ -238,9 +238,9 @@ class NS2Dsolver(object):
             outflow += u[-1,1:-1].sum() * d[1]
 
         if not dirichlet_used and outflow_len > 0. and \
-            self._mass_conservation in (self.MASS_ADD, self.MASS_SCALE):
+            self.mass_conservation in (self.MASS_ADD, self.MASS_SCALE):
 
-            if outflow == 0. or self._mass_conservation == self.MASS_ADD:
+            if outflow == 0. or self.mass_conservation == self.MASS_ADD:
                 
                 flow_correction = net_outflow/outflow_len
 
@@ -266,7 +266,7 @@ class NS2Dsolver(object):
         
         # for mass conservation
         if not dirichlet_used and (outflow_len == 0.0 or \
-            not self._mass_conservation in (self.MASS_ADD, self.MASS_SCALE)):
+            not self.mass_conservation in (self.MASS_ADD, self.MASS_SCALE)):
 
             R[1:-1,1:-1] -= R[1:-1,1:-1].sum() / R[1:-1,1:-1].size
 
@@ -370,7 +370,7 @@ class NS2Dsolver(object):
         # print('d[1] = ', d[1])
 
         # imposed boundary conditions:
-        self.bc2d._update_vel_bc_(u, w, self.sim_time, self._bc)
+        self.bc2d._update_vel_bc_(u, w, mask, self.sim_time, self._bc)
         self.bc2d._update_pressure_bc_(p, self.sim_time, self._bc)
 
         # if passive tracer used: will add later on.

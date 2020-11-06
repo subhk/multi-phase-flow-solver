@@ -15,55 +15,35 @@ class Writer(object):
         self.solver = solver
         self.grid = grid
 
-    def file_handler(self, filename, iter=None):
 
-        if iter is None:
-            raise ValueError('Invalid file saves.')
+    def FileWrite(self, filename, u, w, p, psi, time):
 
-        if self.solver.iteration == 0:
-            u_tmp = []
-            w_tmp = []
-            p_tmp = []
-            time = []
-            strm_fun_tmp = []
+        if self.solver.sim_time >= self.solver.stop_sim_time or \
+            self.solver.iteration >= self.solver.stop_iteration:
 
-        # velocity will be written on pressure nodes.
-        if self.solver.iteration%iter == 0:
-            
-            util = utility(self.solver, self.grid)
-
-            ( u_cell_center, w_cell_center ) = util.avg_velocity()
-            strm_fun = util._cal_streamfunction()
-
-            time.extend(self.solver.sim_time)
-            u_tmp.extend(u_cell_center)
-            w_tmp.extend(w_cell_center)
-            p_tmp.extend(self.solver.p)
-            strm_fun_tmp.extend(strm_fun)
-
-        
-        if self.solver.sim_time >= self.solver.stop_sim_time:
-
-            u_tmp = np.array(u_tmp)
-            w_tmp = np.array(w_tmp)
-            p_tmp = np.array(p_tmp)
+            u     = np.array(u)
+            w     = np.array(w)
+            p     = np.array(p)
             time  = np.array(time)
-            strm_fun_tmp = np.array(strm_fun_tmp)
+            psi   = np.array(psi)
 
             hf = h5py.File( filename + '.h5', 'w' )
 
-            hf.create_dataset( 't', data=time )
-            hf.create_dataset( 'u', data=u_tmp )
-            hf.create_dataset( 'w', data=w_tmp )
-            hf.create_dataset( 'p', data=p_tmp )
-            hf.create_dataset( 'psi', data=strm_fun_tmp)
+            hf.create_dataset( 't',   data=time )
+            hf.create_dataset( 'u',   data=u )
+            hf.create_dataset( 'w',   data=w )
+            hf.create_dataset( 'p',   data=p )
+            hf.create_dataset( 'psi', data=psi )
             
-            hf.create_dataset( 'x', data=self.grid.x )
-            hf.create_dataset( 'z', data=self.grid.z )
+            x = np.linspace( self.grid.x_coord[0], self.grid.x_coord[1], self.grid.sze[0]+1 )
+            z = np.linspace( self.grid.z_coord[0], self.grid.z_coord[1], self.grid.sze[1]+1 )
+
+            hf.create_dataset( 'x', data=x )
+            hf.create_dataset( 'z', data=z )
 
             if hf.__bool__():
                 hf.close()
-                print( 'done → writing ... ', filename + ',h5' )
+                print( 'done -> writing ... ', filename + ',h5' )
 
 
 
